@@ -82,16 +82,16 @@ export default function PftModal({ onClose, onSubmit }: PftModalProps) {
                 value={runMin}
                 onChange={e => setRunMin(e.target.value)}
                 placeholder="21"
-                className="flex-1 bg-wp-surface border-[1.5px] border-wp-contour rounded-lg px-4 font-body text-wp-black"
+                className="flex-1 min-w-0 bg-wp-surface border-[1.5px] border-wp-contour rounded-lg px-4 font-body text-wp-black"
                 style={inputStyle}
               />
-              <span className="text-wp-tan-dark font-mono font-semibold" style={{ fontSize: 20 }}>:</span>
+              <span className="shrink-0 text-wp-tan-dark font-mono font-semibold" style={{ fontSize: 20 }}>:</span>
               <input
                 type="number"
                 value={runSec}
                 onChange={e => setRunSec(e.target.value)}
                 placeholder="00"
-                className="flex-1 bg-wp-surface border-[1.5px] border-wp-contour rounded-lg px-4 font-body text-wp-black"
+                className="flex-1 min-w-0 bg-wp-surface border-[1.5px] border-wp-contour rounded-lg px-4 font-body text-wp-black"
                 style={inputStyle}
               />
             </div>
