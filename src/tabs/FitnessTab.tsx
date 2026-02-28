@@ -153,9 +153,9 @@ function LogPftForm({ onLogPft }: { onLogPft: FitnessTabProps['onLogPft'] }) {
           <div>
             <FieldLabel>3-Mile Run (mm:ss)</FieldLabel>
             <div className="flex gap-2 items-center">
-              <input type="number" value={runMin} onChange={e => setRunMin(e.target.value)} placeholder="21" className="flex-1 bg-wp-surface border-[1.5px] border-wp-contour rounded-lg px-3 font-body text-wp-black" style={inputStyle} />
-              <span className="text-wp-tan-dark font-mono font-semibold" style={{ fontSize: 20 }}>:</span>
-              <input type="number" value={runSec} onChange={e => setRunSec(e.target.value)} placeholder="00" className="flex-1 bg-wp-surface border-[1.5px] border-wp-contour rounded-lg px-3 font-body text-wp-black" style={inputStyle} />
+              <input type="number" value={runMin} onChange={e => setRunMin(e.target.value)} placeholder="21" className="flex-1 min-w-0 bg-wp-surface border-[1.5px] border-wp-contour rounded-lg px-3 font-body text-wp-black" style={inputStyle} />
+              <span className="shrink-0 text-wp-tan-dark font-mono font-semibold" style={{ fontSize: 20 }}>:</span>
+              <input type="number" value={runSec} onChange={e => setRunSec(e.target.value)} placeholder="00" className="flex-1 min-w-0 bg-wp-surface border-[1.5px] border-wp-contour rounded-lg px-3 font-body text-wp-black" style={inputStyle} />
             </div>
           </div>
 
