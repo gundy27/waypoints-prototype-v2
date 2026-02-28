@@ -1,0 +1,184 @@
+import { useState } from 'react'
+import { Search, ChevronRight, ChevronDown, ArrowLeft, Bookmark } from 'lucide-react'
+import { pocketbookCategories } from '../data/mockData'
+import type { PocketbookCategory, PocketbookItem } from '../data/mockData'
+
+interface PocketbookTabProps {
+  bookmarks: Set<string>
+  onToggleBookmark: (id: string) => void
+}
+
+function CategoryList({
+  categories,
+  searchQuery,
+  onSelect,
+}: {
+  categories: PocketbookCategory[]
+  searchQuery: string
+  onSelect: (cat: PocketbookCategory) => void
+}) {
+  const filtered = searchQuery
+    ? categories.filter(
+        c =>
+          c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.items.some(
+            i =>
+              i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              i.content.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+      )
+    : categories
+
+  return (
+    <div className="space-y-3">
+      {filtered.map(cat => (
+        <button
+          key={cat.id}
+          onClick={() => onSelect(cat)}
+          className="w-full flex items-center justify-between bg-wp-surface rounded-xl p-4 text-left border-none cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light/30"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
+        >
+          <span className="font-heading font-semibold text-wp-black" style={{ fontSize: 16, lineHeight: 1.3 }}>
+            {cat.title}
+          </span>
+          <ChevronRight size={20} className="text-wp-tan-dark shrink-0" />
+        </button>
+      ))}
+      {filtered.length === 0 && (
+        <p className="text-center font-body text-wp-tan-dark py-8" style={{ fontSize: 14 }}>
+          No results found
+        </p>
+      )}
+    </div>
+  )
+}
+
+function CategoryDetail({
+  category,
+  bookmarks,
+  onToggleBookmark,
+  onBack,
+}: {
+  category: PocketbookCategory
+  bookmarks: Set<string>
+  onToggleBookmark: (id: string) => void
+  onBack: () => void
+}) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  function toggleExpand(id: string) {
+    setExpanded(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  return (
+    <div>
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1 bg-transparent border-none cursor-pointer mb-4 px-0"
+      >
+        <ArrowLeft size={18} className="text-wp-accent" />
+        <span className="font-body font-medium text-wp-accent" style={{ fontSize: 14 }}>
+          Back
+        </span>
+      </button>
+
+      <h2 className="font-heading font-bold text-wp-black mb-4" style={{ fontSize: 20, lineHeight: 1.2 }}>
+        {category.title}
+      </h2>
+
+      <div className="space-y-2">
+        {category.items.map((item: PocketbookItem) => {
+          const isOpen = expanded.has(item.id)
+          const isBookmarked = bookmarks.has(item.id)
+          return (
+            <div
+              key={item.id}
+              className="bg-wp-surface rounded-xl overflow-hidden"
+              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
+            >
+              <button
+                onClick={() => toggleExpand(item.id)}
+                className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left"
+              >
+                <span className="font-heading font-semibold text-wp-black pr-2" style={{ fontSize: 15, lineHeight: 1.3 }}>
+                  {item.title}
+                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      onToggleBookmark(item.id)
+                    }}
+                    className="p-1 bg-transparent border-none cursor-pointer"
+                  >
+                    <Bookmark
+                      size={18}
+                      className={isBookmarked ? 'text-wp-accent fill-wp-accent' : 'text-wp-tan-dark'}
+                      strokeWidth={1.75}
+                    />
+                  </button>
+                  {isOpen ? (
+                    <ChevronDown size={18} className="text-wp-tan-dark" />
+                  ) : (
+                    <ChevronRight size={18} className="text-wp-tan-dark" />
+                  )}
+                </div>
+              </button>
+              {isOpen && (
+                <div className="px-4 pb-4 pt-0">
+                  <div className="border-t border-wp-tan-light pt-3">
+                    <p className="font-body text-wp-black" style={{ fontSize: 14, lineHeight: 1.6 }}>
+                      {item.content}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+export default function PocketbookTab({ bookmarks, onToggleBookmark }: PocketbookTabProps) {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<PocketbookCategory | null>(null)
+
+  if (selectedCategory) {
+    return (
+      <CategoryDetail
+        category={selectedCategory}
+        bookmarks={bookmarks}
+        onToggleBookmark={onToggleBookmark}
+        onBack={() => setSelectedCategory(null)}
+      />
+    )
+  }
+
+  return (
+    <div>
+      <div className="relative mb-4">
+        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-wp-tan-dark" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search references..."
+          className="w-full bg-wp-surface border-[1.5px] border-wp-contour rounded-lg pl-10 pr-4 font-body text-wp-black"
+          style={{ height: 44, fontSize: 14 }}
+        />
+      </div>
+      <CategoryList
+        categories={pocketbookCategories}
+        searchQuery={searchQuery}
+        onSelect={setSelectedCategory}
+      />
+    </div>
+  )
+}
