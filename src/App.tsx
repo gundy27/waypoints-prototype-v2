@@ -29,8 +29,8 @@ export default function App() {
       <Header title={meta.title} subtitle={meta.subtitle} />
 
       <main
-        className="flex-1 overflow-y-auto relative z-10 px-4 pb-4"
-        style={{ paddingBottom: 80 }}
+        className="flex-1 overflow-y-auto relative z-10 px-4 pt-6"
+        style={{ paddingBottom: 96 }}
       >
         {activeTab === 'career' && (
           <CareerTab profile={profile} breakdown={breakdown} onLogPft={logPft} />

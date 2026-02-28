@@ -145,11 +145,53 @@ body {
 ```
 4px   — micro (icon-to-label, tight internal padding)
 8px   — small (between related elements within a card)
-12px  — medium (card internal padding)
-16px  — standard (between cards, section padding)
-24px  — large (between sections)
-32px  — extra-large (top of page to first content)
+12px  — medium (card internal padding, gap between side-by-side cards)
+16px  — standard (between cards, section padding, card internal padding default)
+24px  — large (between major sections — section heading to previous content)
+32px  — extra-large (top of page to first content, reserved for hero gaps)
 ```
+
+### Applied Spacing Rules (implementation decisions)
+
+These rules are locked in the codebase and should be kept consistent:
+
+**Page structure:**
+- Content area top padding: `pt-6` (24px) — creates breathing room below header
+- Content area bottom padding: 96px total — 64px tab bar + 32px visual clearance
+- Content area horizontal padding: `px-4` (16px)
+
+**Between sections (section heading to previous card):**
+- Use `mt-8` (32px) — gives each section clear separation
+
+**Section heading to card below it:**
+- Use `mb-4` (16px) — consistent gap from heading to first card
+
+**Between cards in a list:**
+- Use `space-y-3` (12px) — matches "margin between cards: 12px" spec
+
+**Inside cards:**
+- Standard card padding: `p-4` (16px)
+- Hero/score card padding: `p-5` (20px) — score display cards get extra room
+- Between labeled groups within a card: `space-y-4` (16px)
+- Between individual items within a group: `space-y-3` (12px)
+- Label above progress bar or input: `mb-2` (8px) — never `mb-1`
+- Label above value text: `mt-2` (8px) from previous element
+
+**Form inputs:**
+- Label to input: `mb-2` (8px) minimum
+- Between form field groups: `space-y-4` (16px)
+- Buttons below form fields: `pt-1` extra top nudge within `space-y-4`
+
+**Detail views (back nav + title):**
+- Back button bottom margin: `mb-5` (20px)
+- Title bottom margin: `mb-4` or `mb-5` (16–20px) before tags/content
+
+**Badges and tags:**
+- Internal padding: `px-2 py-1` — slightly taller than `py-0.5` for readability
+
+**Header:**
+- Height: 56px (title only) / 64px (title + subtitle)
+- Bottom border: `border-b border-wp-tan-light/50` — subtle divider
 
 ### Page Structure
 
@@ -157,19 +199,22 @@ body {
 ┌──────────────────────────┐
 │  Status Bar (device)     │  — not rendered, but account for safe area
 ├──────────────────────────┤
-│  Header / Page Title     │  — 56px height, sticky
-│  (optional subtitle)     │
+│  Header / Page Title     │  — 56px (no subtitle) / 64px (with subtitle)
+│  (optional subtitle)     │  — bottom border: 1px solid #E8D5B7 at 50% opacity
 ├──────────────────────────┤
 │                          │
-│  Scrollable Content      │  — padding: 16px horizontal
+│  Scrollable Content      │  — padding: 16px horizontal, 24px top
 │                          │
-│  [Cards]                 │
-│  [Cards]                 │
-│  [Cards]                 │
+│  [First Card]            │  ← no extra top margin needed (pt-6 on container)
+│  [Card]   — 12px gap     │
+│  [Card]   — 12px gap     │
 │                          │
+│  [Section Heading]  ← 32px from previous card (mt-8)
+│  [Card]             ← 16px from heading (mb-4)
+│  [Card]   — 12px gap     │
 │                          │
 ├──────────────────────────┤
-│  Bottom Tab Bar          │  — 64px height + safe area, fixed
+│  Bottom Tab Bar          │  — 64px height + 32px clearance above
 │  Career Fitness Pocket.. │
 └──────────────────────────┘
 ```

@@ -79,7 +79,7 @@ function CategoryDetail({
     <div>
       <button
         onClick={onBack}
-        className="flex items-center gap-1 bg-transparent border-none cursor-pointer mb-4 px-0"
+        className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer mb-5 px-0"
       >
         <ArrowLeft size={18} className="text-wp-accent" />
         <span className="font-body font-medium text-wp-accent" style={{ fontSize: 14 }}>
@@ -87,11 +87,11 @@ function CategoryDetail({
         </span>
       </button>
 
-      <h2 className="font-heading font-bold text-wp-black mb-4" style={{ fontSize: 20, lineHeight: 1.2 }}>
+      <h2 className="font-heading font-bold text-wp-black mb-5" style={{ fontSize: 20, lineHeight: 1.2 }}>
         {category.title}
       </h2>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {category.items.map((item: PocketbookItem) => {
           const isOpen = expanded.has(item.id)
           const isBookmarked = bookmarks.has(item.id)
@@ -103,12 +103,12 @@ function CategoryDetail({
             >
               <button
                 onClick={() => toggleExpand(item.id)}
-                className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left"
+                className="w-full flex items-center justify-between px-4 py-4 bg-transparent border-none cursor-pointer text-left"
               >
-                <span className="font-heading font-semibold text-wp-black pr-2" style={{ fontSize: 15, lineHeight: 1.3 }}>
+                <span className="font-heading font-semibold text-wp-black pr-3" style={{ fontSize: 15, lineHeight: 1.3 }}>
                   {item.title}
                 </span>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                   <button
                     onClick={e => {
                       e.stopPropagation()
@@ -130,9 +130,9 @@ function CategoryDetail({
                 </div>
               </button>
               {isOpen && (
-                <div className="px-4 pb-4 pt-0">
-                  <div className="border-t border-wp-tan-light pt-3">
-                    <p className="font-body text-wp-black" style={{ fontSize: 14, lineHeight: 1.6 }}>
+                <div className="px-4 pb-5">
+                  <div className="border-t border-wp-tan-light pt-4">
+                    <p className="font-body text-wp-black" style={{ fontSize: 14, lineHeight: 1.65 }}>
                       {item.content}
                     </p>
                   </div>
@@ -163,7 +163,7 @@ export default function PocketbookTab({ bookmarks, onToggleBookmark }: Pocketboo
 
   return (
     <div>
-      <div className="relative mb-4">
+      <div className="relative mb-5">
         <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-wp-tan-dark" />
         <input
           type="text"
