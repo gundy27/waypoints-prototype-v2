@@ -3,6 +3,20 @@ import { ArrowLeft } from 'lucide-react'
 import { maradmins } from '../data/mockData'
 import type { Maradmin } from '../data/mockData'
 
+type SortOption = 'relevance' | 'latest' | 'trending'
+
+const trendingOrder = [3, 1, 5, 2, 4]
+
+function sortMaradmins(items: Maradmin[], sort: SortOption): Maradmin[] {
+  if (sort === 'relevance') {
+    return [...items].sort((a, b) => Number(b.affectsScore) - Number(a.affectsScore))
+  }
+  if (sort === 'latest') {
+    return [...items].sort((a, b) => b.id - a.id)
+  }
+  return [...items].sort((a, b) => trendingOrder.indexOf(a.id) - trendingOrder.indexOf(b.id))
+}
+
 const tagColors: Record<string, { bg: string; text: string }> = {
   Promotions: { bg: '#FF552220', text: '#FF5522' },
   PME: { bg: '#2D8A4E20', text: '#2D8A4E' },
@@ -118,18 +132,48 @@ function MaradminDetail({ item, onBack }: { item: Maradmin; onBack: () => void }
   )
 }
 
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'relevance', label: 'Relevance' },
+  { value: 'latest', label: 'Latest' },
+  { value: 'trending', label: 'Trending' },
+]
+
 export default function MaradminsTab() {
   const [selectedItem, setSelectedItem] = useState<Maradmin | null>(null)
+  const [sort, setSort] = useState<SortOption>('relevance')
 
   if (selectedItem) {
     return <MaradminDetail item={selectedItem} onBack={() => setSelectedItem(null)} />
   }
 
+  const sorted = sortMaradmins(maradmins, sort)
+
   return (
-    <div className="space-y-3">
-      {maradmins.map(item => (
-        <MaradminCard key={item.id} item={item} onSelect={setSelectedItem} />
-      ))}
+    <div>
+      <div className="flex items-center gap-1 mb-4">
+        <span className="font-body text-wp-tan-dark mr-2 shrink-0" style={{ fontSize: 12, fontWeight: 500 }}>
+          Sort by
+        </span>
+        {SORT_OPTIONS.map(opt => (
+          <button
+            key={opt.value}
+            onClick={() => setSort(opt.value)}
+            className="px-3 py-1 rounded-full font-body font-medium border-none cursor-pointer transition-colors duration-150"
+            style={{
+              fontSize: 12,
+              backgroundColor: sort === opt.value ? '#1A1A1A' : '#F0EAE0',
+              color: sort === opt.value ? '#FFFFFF' : '#6B5B45',
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <div className="space-y-3">
+        {sorted.map(item => (
+          <MaradminCard key={item.id} item={item} onSelect={setSelectedItem} />
+        ))}
+      </div>
     </div>
   )
 }
