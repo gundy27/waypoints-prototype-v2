@@ -32,7 +32,7 @@ export default function App() {
         <Header title={meta.title} subtitle={meta.subtitle} />
 
         <main
-          className="flex-1 overflow-y-auto relative z-10 px-4 pt-6"
+          className="flex-1 overflow-y-auto relative z-10 px-2 pt-6"
           style={{ paddingBottom: 24 }}
         >
           {activeTab === 'career' && (
