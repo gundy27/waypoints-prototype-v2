@@ -16,10 +16,11 @@ interface TabBarProps {
 
 export default function TabBar({ activeTab, onTabChange }: TabBarProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-wp-surface border-t border-wp-tan-light"
+    <nav
+      className="shrink-0 bg-wp-surface border-t border-wp-tan-light z-50"
       style={{ height: 64, boxShadow: '0 -2px 8px rgba(0,0,0,0.06)' }}
     >
-      <div className="flex h-full max-w-[428px] mx-auto">
+      <div className="flex h-full">
         {tabs.map(tab => {
           const isActive = activeTab === tab.id
           const Icon = tab.icon

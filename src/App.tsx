@@ -23,28 +23,32 @@ export default function App() {
   const meta = tabMeta[activeTab]
 
   return (
-    <div className="h-full flex flex-col bg-wp-bg">
+    <div className="h-full bg-wp-tan-dark flex items-start justify-center">
       <ContourBackground />
 
-      <Header title={meta.title} subtitle={meta.subtitle} />
-
-      <main
-        className="flex-1 overflow-y-auto relative z-10 px-4 pt-6"
-        style={{ paddingBottom: 96 }}
+      <div className="relative h-full w-full max-w-[428px] flex flex-col bg-wp-bg overflow-hidden"
+        style={{ boxShadow: '0 0 40px rgba(0,0,0,0.18)' }}
       >
-        {activeTab === 'career' && (
-          <CareerTab profile={profile} breakdown={breakdown} onLogPft={logPft} />
-        )}
-        {activeTab === 'fitness' && (
-          <FitnessTab profile={profile} history={history} onLogPft={logPft} />
-        )}
-        {activeTab === 'pocketbook' && (
-          <PocketbookTab bookmarks={bookmarks} onToggleBookmark={toggleBookmark} />
-        )}
-        {activeTab === 'maradmins' && <MaradminsTab />}
-      </main>
+        <Header title={meta.title} subtitle={meta.subtitle} />
 
-      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+        <main
+          className="flex-1 overflow-y-auto relative z-10 px-4 pt-6"
+          style={{ paddingBottom: 24 }}
+        >
+          {activeTab === 'career' && (
+            <CareerTab profile={profile} breakdown={breakdown} onLogPft={logPft} />
+          )}
+          {activeTab === 'fitness' && (
+            <FitnessTab profile={profile} history={history} onLogPft={logPft} />
+          )}
+          {activeTab === 'pocketbook' && (
+            <PocketbookTab bookmarks={bookmarks} onToggleBookmark={toggleBookmark} />
+          )}
+          {activeTab === 'maradmins' && <MaradminsTab />}
+        </main>
+
+        <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
     </div>
   )
 }
