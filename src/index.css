@@ -20,27 +20,26 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 
-html, body, #root {
-  height: 100%;
-  overflow: hidden;
-}
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
 
-body {
-  font-family: var(--font-body);
-  color: #1A1A1A;
-  background-color: #F5F1EB;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  body {
+    font-family: var(--font-body);
+    color: #1A1A1A;
+    background-color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-input:focus {
-  outline: none;
-  border-color: #FF5522;
+  input:focus {
+    outline: none;
+    border-color: #FF5522;
+  }
 }
