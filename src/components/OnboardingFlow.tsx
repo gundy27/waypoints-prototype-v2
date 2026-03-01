@@ -16,12 +16,78 @@ const inputStyle = { height: 48, fontSize: 15 }
 const errorClass = "mt-1.5 font-body text-wp-danger"
 const errorStyle = { fontSize: 12 }
 
-function formatDateDisplay(iso: string): string {
-  if (!iso) return ''
-  const [y, m, d] = iso.split('-')
-  if (!y || !m || !d) return iso
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  return `${months[parseInt(m, 10) - 1]} ${parseInt(d, 10)}, ${y}`
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function getDaysInMonth(month: number, year: number): number {
+  if (!month || !year) return 31
+  return new Date(year, month, 0).getDate()
+}
+
+const selectClass = "bg-wp-bg border-[1.5px] border-wp-contour rounded-lg px-3 font-body text-wp-black focus:border-wp-accent transition-colors duration-150 cursor-pointer appearance-none"
+
+function DateSelectInput({
+  value,
+  onChange,
+  onBlur,
+}: {
+  value: string
+  onChange: (iso: string) => void
+  onBlur: () => void
+}) {
+  const parts = value ? value.split('-') : ['', '', '']
+  const year = parts[0] || ''
+  const month = parts[1] ? parseInt(parts[1], 10) : 0
+  const day = parts[2] ? parseInt(parts[2], 10) : 0
+
+  const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: 30 }, (_, i) => currentYear - i)
+  const daysInMonth = getDaysInMonth(month, parseInt(year, 10))
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
+
+  function update(m: number, d: number, y: string) {
+    if (!m || !d || !y) { onChange(''); return }
+    const mm = String(m).padStart(2, '0')
+    const dd = String(d).padStart(2, '0')
+    onChange(`${y}-${mm}-${dd}`)
+  }
+
+  return (
+    <div className="flex gap-2" onBlur={onBlur}>
+      <select
+        value={month || ''}
+        onChange={e => update(parseInt(e.target.value, 10), day, year)}
+        className={selectClass}
+        style={{ height: 48, fontSize: 15, flex: '2 1 0' }}
+      >
+        <option value="">Month</option>
+        {MONTHS.map((name, i) => (
+          <option key={name} value={i + 1}>{name}</option>
+        ))}
+      </select>
+      <select
+        value={day || ''}
+        onChange={e => update(month, parseInt(e.target.value, 10), year)}
+        className={selectClass}
+        style={{ height: 48, fontSize: 15, flex: '1 1 0' }}
+      >
+        <option value="">Day</option>
+        {days.map(d => (
+          <option key={d} value={d}>{d}</option>
+        ))}
+      </select>
+      <select
+        value={year}
+        onChange={e => update(month, day, e.target.value)}
+        className={selectClass}
+        style={{ height: 48, fontSize: 15, flex: '2 1 0' }}
+      >
+        <option value="">Year</option>
+        {years.map(y => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+    </div>
+  )
 }
 
 interface Step1Data {
@@ -122,45 +188,21 @@ function Step1({
 
       <div>
         <label className={labelClass} style={labelStyle}>Date of Rank</label>
-        <div className="relative">
-          <input
-            type="date"
-            value={data.dor}
-            onChange={e => onChange({ ...data, dor: e.target.value })}
-            onBlur={() => blur('dor')}
-            className={inputClass + " cursor-pointer"}
-            style={{ ...inputStyle, color: data.dor ? '#1A1A1A' : '#A08060' }}
-          />
-          {data.dor && (
-            <div className="absolute inset-0 flex items-center px-4 pointer-events-none">
-              <span className="font-body text-wp-black" style={{ fontSize: 15 }}>
-                {formatDateDisplay(data.dor)}
-              </span>
-            </div>
-          )}
-        </div>
+        <DateSelectInput
+          value={data.dor}
+          onChange={dor => onChange({ ...data, dor })}
+          onBlur={() => blur('dor')}
+        />
         {errors.dor && <p className={errorClass} style={errorStyle}>{errors.dor}</p>}
       </div>
 
       <div>
         <label className={labelClass} style={labelStyle}>Active Duty Base Date (ADBD)</label>
-        <div className="relative">
-          <input
-            type="date"
-            value={data.adbd}
-            onChange={e => onChange({ ...data, adbd: e.target.value })}
-            onBlur={() => blur('adbd')}
-            className={inputClass + " cursor-pointer"}
-            style={{ ...inputStyle, color: data.adbd ? '#1A1A1A' : '#A08060' }}
-          />
-          {data.adbd && (
-            <div className="absolute inset-0 flex items-center px-4 pointer-events-none">
-              <span className="font-body text-wp-black" style={{ fontSize: 15 }}>
-                {formatDateDisplay(data.adbd)}
-              </span>
-            </div>
-          )}
-        </div>
+        <DateSelectInput
+          value={data.adbd}
+          onChange={adbd => onChange({ ...data, adbd })}
+          onBlur={() => blur('adbd')}
+        />
         {errors.adbd && <p className={errorClass} style={errorStyle}>{errors.adbd}</p>}
       </div>
     </div>
@@ -482,7 +524,8 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       }
 
   return (
-    <div className="fixed inset-0 z-[80] flex flex-col bg-wp-bg">
+    <div className="fixed inset-0 z-[80] flex items-start justify-center bg-wp-tan-dark/60">
+      <div className="relative w-full max-w-[428px] h-full flex flex-col bg-wp-bg">
       <div className="sticky top-0 z-10 bg-wp-bg/95 backdrop-blur-sm px-5 pt-5 pb-4 border-b border-wp-tan-light/50">
         <div className="flex items-center justify-between mb-3">
           <span className="font-body font-semibold text-wp-tan-dark" style={{ fontSize: 13 }}>
@@ -556,7 +599,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
             ) : step < TOTAL_STEPS ? (
               <>Next <ChevronRight size={18} /></>
             ) : (
-              'Calculate My Score'
+              "Let's Go"
             )}
           </button>
         </div>
@@ -568,6 +611,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
           to { stroke-dashoffset: 0; }
         }
       `}</style>
+      </div>
     </div>
   )
 }
