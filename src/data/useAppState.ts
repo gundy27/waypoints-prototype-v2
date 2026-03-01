@@ -37,6 +37,7 @@ export interface OnboardingData {
   firstName: string
   lastName: string
   mosCode: string
+  rank: string
   dor: string
   adbd: string
   avgProMark: number
@@ -45,6 +46,14 @@ export interface OnboardingData {
   cftScore: number
   rifleScore: number
   rifleBadge: string
+}
+
+const RANK_DISPLAY: Record<string, string> = {
+  PVT: 'E-1 (Private)',
+  PFC: 'E-2 (Private First Class)',
+  LCpl: 'E-3 (Lance Corporal)',
+  Cpl: 'E-4 (Corporal)',
+  Sgt: 'E-5 (Sergeant)',
 }
 
 export function useAppState() {
@@ -93,11 +102,11 @@ export function useAppState() {
     const proCon = Math.round(proConAvg * 50)
 
     setProfile({
-      name: `LCpl ${data.lastName}`,
+      name: `${data.rank} ${data.lastName}`,
       firstName: data.firstName,
       lastName: data.lastName,
       mos: `${data.mosCode} - Rifleman`,
-      rank: 'E-3 (Lance Corporal)',
+      rank: RANK_DISPLAY[data.rank] ?? data.rank,
       tis: '2 years 4 months',
       tig: '1 year 1 month',
       dor: data.dor,

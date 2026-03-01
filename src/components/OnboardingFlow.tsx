@@ -8,7 +8,7 @@ interface OnboardingFlowProps {
   onDismiss: () => void
 }
 
-const TOTAL_STEPS = 4
+const TOTAL_STEPS = 5
 
 const labelClass = "block font-body font-medium text-wp-tan-dark mb-2"
 const labelStyle = { fontSize: 12, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }
@@ -111,24 +111,108 @@ function DateSelectInput({
   )
 }
 
+type RankCode = 'PVT' | 'PFC' | 'LCpl' | 'Cpl' | 'Sgt'
+
+function RankInsignia({ rank, selected }: { rank: RankCode; selected: boolean }) {
+  const color = selected ? '#FFFFFF' : '#6B5A3E'
+  const dim = 48
+
+  const CrossedRifles = () => (
+    <g>
+      <line x1="8" y1="22" x2="40" y2="26" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
+      <line x1="8" y1="26" x2="40" y2="22" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
+      <rect x="6" y="20.5" width="6" height="3.5" rx="1" fill={color} />
+      <rect x="36" y="20.5" width="6" height="3.5" rx="1" fill={color} />
+      <rect x="6" y="24.5" width="6" height="3.5" rx="1" fill={color} />
+      <rect x="36" y="24.5" width="6" height="3.5" rx="1" fill={color} />
+    </g>
+  )
+
+  const Chevron = ({ y }: { y: number }) => (
+    <polyline
+      points={`10,${y + 7} 24,${y} 38,${y + 7}`}
+      fill="none"
+      stroke={color}
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  )
+
+  if (rank === 'PVT') {
+    return (
+      <svg width={dim} height={dim} viewBox="0 0 48 48">
+        <circle cx="24" cy="24" r="10" fill="none" stroke={color} strokeWidth="2" strokeDasharray="3 3" />
+      </svg>
+    )
+  }
+
+  if (rank === 'PFC') {
+    return (
+      <svg width={dim} height={dim} viewBox="0 0 48 48">
+        <CrossedRifles />
+        <Chevron y={8} />
+      </svg>
+    )
+  }
+
+  if (rank === 'LCpl') {
+    return (
+      <svg width={dim} height={dim} viewBox="0 0 48 48">
+        <CrossedRifles />
+        <Chevron y={8} />
+      </svg>
+    )
+  }
+
+  if (rank === 'Cpl') {
+    return (
+      <svg width={dim} height={dim} viewBox="0 0 48 48">
+        <CrossedRifles />
+        <Chevron y={4} />
+        <Chevron y={12} />
+      </svg>
+    )
+  }
+
+  if (rank === 'Sgt') {
+    return (
+      <svg width={dim} height={dim} viewBox="0 0 48 48">
+        <CrossedRifles />
+        <Chevron y={1} />
+        <Chevron y={9} />
+        <Chevron y={17} />
+      </svg>
+    )
+  }
+
+  return null
+}
+
+const RANKS: RankCode[] = ['PVT', 'PFC', 'LCpl', 'Cpl', 'Sgt']
+
 interface Step1Data {
   fullName: string
   mosCode: string
+  rank: RankCode | ''
+}
+
+interface Step2Data {
   dor: string
   adbd: string
 }
 
-interface Step2Data {
+interface Step3Data {
   avgProMark: string
   avgConMark: string
 }
 
-interface Step3Data {
+interface Step4Data {
   pftScore: string
   cftScore: string
 }
 
-interface Step4Data {
+interface Step5Data {
   rifleScore: string
   rifleBadge: string
 }
@@ -151,8 +235,7 @@ function Step1({
   const errors = {
     fullName: touched.fullName && !data.fullName.trim() ? 'Required' : '',
     mosCode: touched.mosCode && !/^\d{4}$/.test(data.mosCode) ? 'Enter a 4-digit MOS code' : '',
-    dor: touched.dor && !data.dor ? 'Required' : '',
-    adbd: touched.adbd && !data.adbd ? 'Required' : '',
+    rank: touched.rank && !data.rank ? 'Select your rank' : '',
   }
 
   function blur(field: string) {
@@ -192,6 +275,68 @@ function Step1({
       </div>
 
       <div>
+        <label className={labelClass} style={labelStyle}>Rank</label>
+        <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+          {RANKS.map(rank => {
+            const selected = data.rank === rank
+            return (
+              <button
+                key={rank}
+                type="button"
+                onClick={() => { onChange({ ...data, rank }); blur('rank') }}
+                className="flex flex-col items-center justify-center rounded-xl border-[1.5px] cursor-pointer transition-all duration-150"
+                style={{
+                  height: 76,
+                  paddingTop: 8,
+                  paddingBottom: 6,
+                  borderColor: selected ? '#FF5522' : '#D2C4A8',
+                  background: selected ? '#FF5522' : 'transparent',
+                }}
+              >
+                <RankInsignia rank={rank} selected={selected} />
+                <span
+                  className="font-body font-semibold leading-none mt-1"
+                  style={{ fontSize: 11, color: selected ? '#FFFFFF' : '#1A1A1A' }}
+                >
+                  {rank}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+        {errors.rank && <p className={errorClass} style={errorStyle}>{errors.rank}</p>}
+      </div>
+    </div>
+  )
+}
+
+function ImportantDatesStep({
+  data,
+  onChange,
+}: {
+  data: Step2Data
+  onChange: (d: Step2Data) => void
+}) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+
+  const errors = {
+    dor: touched.dor && !data.dor ? 'Required' : '',
+    adbd: touched.adbd && !data.adbd ? 'Required' : '',
+  }
+
+  function blur(field: string) {
+    setTouched(t => ({ ...t, [field]: true }))
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="bg-wp-bg rounded-xl p-4 border border-wp-contour/50">
+        <p className="font-body text-wp-tan-dark" style={{ fontSize: 13, lineHeight: 1.55 }}>
+          These dates are used to calculate your Time in Grade and Time in Service, which directly affect your composite score.
+        </p>
+      </div>
+
+      <div>
         <label className={labelClass} style={labelStyle}>Date of Rank</label>
         <DateSelectInput
           value={data.dor}
@@ -214,12 +359,12 @@ function Step1({
   )
 }
 
-function Step2({
+function ProConStep({
   data,
   onChange,
 }: {
-  data: Step2Data
-  onChange: (d: Step2Data) => void
+  data: Step3Data
+  onChange: (d: Step3Data) => void
 }) {
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
@@ -356,12 +501,12 @@ function FitnessSlider({
   )
 }
 
-function Step3({
+function FitnessStep({
   data,
   onChange,
 }: {
-  data: Step3Data
-  onChange: (d: Step3Data) => void
+  data: Step4Data
+  onChange: (d: Step4Data) => void
 }) {
   const pftVal = parseInt(data.pftScore, 10) || 0
   const cftVal = parseInt(data.cftScore, 10) || 0
@@ -396,12 +541,12 @@ function Step3({
 
 const BADGE_OPTIONS = ['Expert', 'Sharpshooter', 'Marksman']
 
-function Step4({
+function RifleStep({
   data,
   onChange,
 }: {
-  data: Step4Data
-  onChange: (d: Step4Data) => void
+  data: Step5Data
+  onChange: (d: Step5Data) => void
 }) {
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
@@ -466,10 +611,11 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
   const [animating, setAnimating] = useState(false)
   const [showCheck, setShowCheck] = useState(false)
 
-  const [step1, setStep1] = useState<Step1Data>({ fullName: '', mosCode: '', dor: '', adbd: '' })
-  const [step2, setStep2] = useState<Step2Data>({ avgProMark: '', avgConMark: '' })
-  const [step3, setStep3] = useState<Step3Data>({ pftScore: '0', cftScore: '0' })
-  const [step4, setStep4] = useState<Step4Data>({ rifleScore: '', rifleBadge: '' })
+  const [step1, setStep1] = useState<Step1Data>({ fullName: '', mosCode: '', rank: '' })
+  const [step2, setStep2] = useState<Step2Data>({ dor: '', adbd: '' })
+  const [step3, setStep3] = useState<Step3Data>({ avgProMark: '', avgConMark: '' })
+  const [step4, setStep4] = useState<Step4Data>({ pftScore: '0', cftScore: '0' })
+  const [step5, setStep5] = useState<Step5Data>({ rifleScore: '', rifleBadge: '' })
 
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -478,23 +624,25 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       return (
         step1.fullName.trim().length > 0 &&
         /^\d{4}$/.test(step1.mosCode) &&
-        !!step1.dor &&
-        !!step1.adbd
+        !!step1.rank
       )
     }
     if (step === 2) {
-      const pro = parseFloat(step2.avgProMark)
-      const con = parseFloat(step2.avgConMark)
-      return !isNaN(pro) && pro >= 0 && pro <= 5 && !isNaN(con) && con >= 0 && con <= 5
+      return !!step2.dor && !!step2.adbd
     }
     if (step === 3) {
-      const pft = parseInt(step3.pftScore, 10)
-      const cft = parseInt(step3.cftScore, 10)
-      return !isNaN(pft) && pft >= 0 && pft <= 300 && !isNaN(cft) && cft >= 0 && cft <= 300
+      const pro = parseFloat(step3.avgProMark)
+      const con = parseFloat(step3.avgConMark)
+      return !isNaN(pro) && pro >= 0 && pro <= 5 && !isNaN(con) && con >= 0 && con <= 5
     }
     if (step === 4) {
-      const rifle = parseInt(step4.rifleScore, 10)
-      return !isNaN(rifle) && rifle >= 190 && rifle <= 250 && !!step4.rifleBadge
+      const pft = parseInt(step4.pftScore, 10)
+      const cft = parseInt(step4.cftScore, 10)
+      return !isNaN(pft) && pft >= 0 && pft <= 300 && !isNaN(cft) && cft >= 0 && cft <= 300
+    }
+    if (step === 5) {
+      const rifle = parseInt(step5.rifleScore, 10)
+      return !isNaN(rifle) && rifle >= 190 && rifle <= 250 && !!step5.rifleBadge
     }
     return false
   }
@@ -524,14 +672,15 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
           firstName,
           lastName,
           mosCode: step1.mosCode,
-          dor: step1.dor,
-          adbd: step1.adbd,
-          avgProMark: parseFloat(step2.avgProMark),
-          avgConMark: parseFloat(step2.avgConMark),
-          pftScore: parseInt(step3.pftScore, 10),
-          cftScore: parseInt(step3.cftScore, 10),
-          rifleScore: parseInt(step4.rifleScore, 10),
-          rifleBadge: step4.rifleBadge,
+          rank: step1.rank as RankCode,
+          dor: step2.dor,
+          adbd: step2.adbd,
+          avgProMark: parseFloat(step3.avgProMark),
+          avgConMark: parseFloat(step3.avgConMark),
+          pftScore: parseInt(step4.pftScore, 10),
+          cftScore: parseInt(step4.cftScore, 10),
+          rifleScore: parseInt(step5.rifleScore, 10),
+          rifleBadge: step5.rifleBadge,
         })
       }, 600)
     }
@@ -548,6 +697,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
 
   const stepTitles = [
     'Your Info',
+    'Important Dates',
     'Pro/Con Marks',
     'Fitness Scores',
     'Rifle Qual',
@@ -597,9 +747,10 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       <div className="flex-1 overflow-y-auto px-5 pt-6 pb-8">
         <div ref={contentRef} style={slideStyle}>
           {step === 1 && <Step1 data={step1} onChange={setStep1} />}
-          {step === 2 && <Step2 data={step2} onChange={setStep2} />}
-          {step === 3 && <Step3 data={step3} onChange={setStep3} />}
-          {step === 4 && <Step4 data={step4} onChange={setStep4} />}
+          {step === 2 && <ImportantDatesStep data={step2} onChange={setStep2} />}
+          {step === 3 && <ProConStep data={step3} onChange={setStep3} />}
+          {step === 4 && <FitnessStep data={step4} onChange={setStep4} />}
+          {step === 5 && <RifleStep data={step5} onChange={setStep5} />}
         </div>
       </div>
 
