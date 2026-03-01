@@ -332,7 +332,7 @@ function ImportantDatesStep({
     <div className="space-y-5">
       <div className="bg-wp-bg rounded-xl p-4 border border-wp-contour/50">
         <p className="font-body text-wp-tan-dark" style={{ fontSize: 13, lineHeight: 1.55 }}>
-          These dates are used to calculate your Time in Grade and Time in Service, which directly affect your composite score.
+          These dates are used to calculate your Time in Grade and Time in Service.
         </p>
       </div>
 
