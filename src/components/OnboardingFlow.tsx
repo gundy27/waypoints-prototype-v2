@@ -780,14 +780,18 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center bg-black">
       <div
-        className="relative w-full max-w-[428px] h-full flex flex-col"
-        style={{
-          backgroundImage: 'url(/tan-contours.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
+        className="relative w-full max-w-[428px] h-full flex flex-col bg-wp-bg"
       >
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: 'url(/tan-contours.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.25,
+          }}
+        />
       <div className="sticky top-0 z-10 bg-wp-bg/90 backdrop-blur-sm px-5 pt-5 pb-4 border-b border-wp-tan-light/50">
         <div className="flex items-center justify-between mb-3">
           <span className="font-body font-semibold text-wp-tan-dark" style={{ fontSize: 13 }}>
