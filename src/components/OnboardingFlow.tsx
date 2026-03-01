@@ -112,8 +112,7 @@ function DateSelectInput({
 }
 
 interface Step1Data {
-  firstName: string
-  lastName: string
+  fullName: string
   mosCode: string
   dor: string
   adbd: string
@@ -150,8 +149,7 @@ function Step1({
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const errors = {
-    firstName: touched.firstName && !data.firstName.trim() ? 'Required' : '',
-    lastName: touched.lastName && !data.lastName.trim() ? 'Required' : '',
+    fullName: touched.fullName && !data.fullName.trim() ? 'Required' : '',
     mosCode: touched.mosCode && !/^\d{4}$/.test(data.mosCode) ? 'Enter a 4-digit MOS code' : '',
     dor: touched.dor && !data.dor ? 'Required' : '',
     adbd: touched.adbd && !data.adbd ? 'Required' : '',
@@ -164,31 +162,17 @@ function Step1({
   return (
     <div className="space-y-5">
       <div>
-        <label className={labelClass} style={labelStyle}>First Name</label>
+        <label className={labelClass} style={labelStyle}>Full Name</label>
         <input
           type="text"
-          value={data.firstName}
-          onChange={e => onChange({ ...data, firstName: e.target.value })}
-          onBlur={() => blur('firstName')}
-          placeholder="e.g. Miguel"
+          value={data.fullName}
+          onChange={e => onChange({ ...data, fullName: e.target.value })}
+          onBlur={() => blur('fullName')}
+          placeholder="e.g. Miguel Martinez"
           className={inputClass}
           style={inputStyle}
         />
-        {errors.firstName && <p className={errorClass} style={errorStyle}>{errors.firstName}</p>}
-      </div>
-
-      <div>
-        <label className={labelClass} style={labelStyle}>Last Name</label>
-        <input
-          type="text"
-          value={data.lastName}
-          onChange={e => onChange({ ...data, lastName: e.target.value })}
-          onBlur={() => blur('lastName')}
-          placeholder="e.g. Martinez"
-          className={inputClass}
-          style={inputStyle}
-        />
-        {errors.lastName && <p className={errorClass} style={errorStyle}>{errors.lastName}</p>}
+        {errors.fullName && <p className={errorClass} style={errorStyle}>{errors.fullName}</p>}
       </div>
 
       <div>
@@ -482,7 +466,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
   const [animating, setAnimating] = useState(false)
   const [showCheck, setShowCheck] = useState(false)
 
-  const [step1, setStep1] = useState<Step1Data>({ firstName: '', lastName: '', mosCode: '', dor: '', adbd: '' })
+  const [step1, setStep1] = useState<Step1Data>({ fullName: '', mosCode: '', dor: '', adbd: '' })
   const [step2, setStep2] = useState<Step2Data>({ avgProMark: '', avgConMark: '' })
   const [step3, setStep3] = useState<Step3Data>({ pftScore: '0', cftScore: '0' })
   const [step4, setStep4] = useState<Step4Data>({ rifleScore: '', rifleBadge: '' })
@@ -492,8 +476,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
   function canAdvance(): boolean {
     if (step === 1) {
       return (
-        step1.firstName.trim().length > 0 &&
-        step1.lastName.trim().length > 0 &&
+        step1.fullName.trim().length > 0 &&
         /^\d{4}$/.test(step1.mosCode) &&
         !!step1.dor &&
         !!step1.adbd
@@ -534,9 +517,12 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       vibrate([30, 50, 30])
       setTimeout(() => {
         setShowCheck(false)
+        const nameParts = step1.fullName.trim().split(/\s+/)
+        const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : nameParts[0]
+        const firstName = nameParts.length > 1 ? nameParts.slice(0, -1).join(' ') : ''
         onComplete({
-          firstName: step1.firstName.trim(),
-          lastName: step1.lastName.trim(),
+          firstName,
+          lastName,
           mosCode: step1.mosCode,
           dor: step1.dor,
           adbd: step1.adbd,
