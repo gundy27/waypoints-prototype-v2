@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { defaultProfile, scoreBreakdown, pftHistory } from './mockData'
+import { defaultProfile, scoreBreakdown, pftHistory, compositeHistory } from './mockData'
 import type { UserProfile, ScoreBreakdown } from './mockData'
 
 export function calculatePftScore(pullUps: number, crunches: number, runMinutes: number, runSeconds: number): number {
@@ -60,6 +60,7 @@ export function useAppState() {
   const [profile, setProfile] = useState<UserProfile>({ ...defaultProfile })
   const [breakdown, setBreakdown] = useState<ScoreBreakdown[]>([...scoreBreakdown])
   const [history, setHistory] = useState([...pftHistory])
+  const [compositeHist, setCompositeHist] = useState([...compositeHistory])
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set())
 
   const logPft = useCallback((pullUps: number, crunches: number, runMinutes: number, runSeconds: number) => {
@@ -89,9 +90,14 @@ export function useAppState() {
 
     const now = new Date()
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const monthLabel = `${monthNames[now.getMonth()]} ${String(now.getFullYear()).slice(2)}`
     setHistory(prev => [
       ...prev,
-      { month: `${monthNames[now.getMonth()]} ${String(now.getFullYear()).slice(2)}`, score: newPftScore },
+      { month: monthLabel, score: newPftScore },
+    ])
+    setCompositeHist(prev => [
+      ...prev,
+      { month: monthLabel, score: newComposite },
     ])
   }, [profile, breakdown])
 
@@ -136,12 +142,14 @@ export function useAppState() {
     ])
 
     setHistory([{ month: 'Current', score: data.pftScore }])
+    setCompositeHist([{ month: 'Current', score: composite }])
   }, [])
 
   const resetToMockData = useCallback(() => {
     setProfile({ ...defaultProfile })
     setBreakdown([...scoreBreakdown])
     setHistory([...pftHistory])
+    setCompositeHist([...compositeHistory])
     setBookmarks(new Set())
   }, [])
 
@@ -157,5 +165,5 @@ export function useAppState() {
     })
   }, [])
 
-  return { profile, breakdown, history, bookmarks, logPft, submitOnboarding, resetToMockData, toggleBookmark }
+  return { profile, breakdown, history, compositeHist, bookmarks, logPft, submitOnboarding, resetToMockData, toggleBookmark }
 }

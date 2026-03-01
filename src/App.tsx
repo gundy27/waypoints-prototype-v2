@@ -22,7 +22,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('career')
   const [menuOpen, setMenuOpen] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
-  const { profile, breakdown, history, bookmarks, logPft, submitOnboarding, resetToMockData, toggleBookmark } = useAppState()
+  const { profile, breakdown, history, compositeHist, bookmarks, logPft, submitOnboarding, resetToMockData, toggleBookmark } = useAppState()
 
   const careerSubtitle = `${profile.name} — ${profile.mos.split(' ')[0]}`
   const meta: { title: string; subtitle?: string } = {
@@ -56,7 +56,7 @@ export default function App() {
           style={{ paddingBottom: 32 }}
         >
           {activeTab === 'career' && (
-            <CareerTab profile={profile} breakdown={breakdown} onLogPft={logPft} />
+            <CareerTab profile={profile} breakdown={breakdown} compositeHistory={compositeHist} onLogPft={logPft} />
           )}
           {activeTab === 'fitness' && (
             <FitnessTab profile={profile} history={history} onLogPft={logPft} />

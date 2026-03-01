@@ -71,6 +71,13 @@ export const pftHistory = [
   { month: 'Jan 25', score: 271 },
 ]
 
+export const compositeHistory = [
+  { month: 'Jun 24', score: 1350 },
+  { month: 'Sep 24', score: 1380 },
+  { month: 'Nov 24', score: 1405 },
+  { month: 'Jan 25', score: 1432 },
+]
+
 export interface Tip {
   id: number
   title: string

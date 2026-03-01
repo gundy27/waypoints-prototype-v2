@@ -1,24 +1,33 @@
 import { useState } from 'react'
-import { TrendingUp, Target, BookOpen, FileText, Dumbbell, Crosshair, Award } from 'lucide-react'
+import { TrendingUp, Target, BookOpen, FileText, Dumbbell, Crosshair, Award, ChevronRight } from 'lucide-react'
 import type { UserProfile, ScoreBreakdown, Tip } from '../data/mockData'
 import { tips } from '../data/mockData'
 import PftModal from '../components/PftModal'
+import ScoreDetailOverlay from '../components/ScoreDetailOverlay'
 
 interface CareerTabProps {
   profile: UserProfile
   breakdown: ScoreBreakdown[]
+  compositeHistory: { month: string; score: number }[]
   onLogPft: (pullUps: number, crunches: number, runMin: number, runSec: number) => void
 }
 
-function ScoreCard({ profile }: { profile: UserProfile }) {
+function ScoreCard({ profile, onOpen }: { profile: UserProfile; onOpen: () => void }) {
   const progress = Math.min(100, (profile.compositeScore / profile.cuttingScore) * 100)
   const gap = profile.cuttingScore - profile.compositeScore
 
   return (
-    <div className="bg-wp-surface rounded-xl p-5" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}>
-      <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.02em' }}>
-        Your Composite Score
-      </p>
+    <button
+      onClick={onOpen}
+      className="w-full text-left bg-wp-surface rounded-xl p-5 border-none cursor-pointer transition-shadow duration-150 hover:shadow-md"
+      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
+    >
+      <div className="flex items-start justify-between">
+        <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.02em' }}>
+          Your Composite Score
+        </p>
+        <ChevronRight size={18} className="text-wp-tan-dark mt-0.5" />
+      </div>
       <div className="mt-2 font-mono font-bold text-wp-black" style={{ fontSize: 36, lineHeight: 1, letterSpacing: '-0.02em' }}>
         {profile.compositeScore}
       </div>
@@ -51,45 +60,7 @@ function ScoreCard({ profile }: { profile: UserProfile }) {
           {gap} points to promotion
         </div>
       )}
-    </div>
-  )
-}
-
-function BreakdownSection({ breakdown }: { breakdown: ScoreBreakdown[] }) {
-  return (
-    <div className="mt-8">
-      <h2 className="font-heading font-bold text-wp-black mb-4" style={{ fontSize: 18, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-        Score Breakdown
-      </h2>
-      <div className="bg-wp-surface rounded-xl p-4" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}>
-        <div className="space-y-5">
-          {breakdown.map(item => {
-            const pct = Math.min(100, (item.value / item.max) * 100)
-            return (
-              <div key={item.label}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-body text-wp-black" style={{ fontSize: 14, fontWeight: 500 }}>
-                    {item.label}
-                  </span>
-                  <span className="font-mono font-semibold text-wp-black" style={{ fontSize: 14 }}>
-                    {item.value}
-                    <span className="text-wp-tan-dark font-body font-normal" style={{ fontSize: 12 }}>
-                      /{item.max}
-                    </span>
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-wp-tan-light rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-wp-accent rounded-full"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </div>
+    </button>
   )
 }
 
@@ -103,18 +74,18 @@ function TipCard({ tip }: { tip: Tip }) {
 
   return (
     <div
-      className="bg-wp-surface rounded-xl p-4 border-l-[3px] border-wp-accent"
+      className="bg-wp-surface rounded-xl p-3.5 border-l-[3px] border-wp-accent"
       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
     >
       <div className="flex items-start gap-3">
         <div className="mt-0.5 shrink-0">
-          <Icon size={20} className="text-wp-accent" strokeWidth={1.75} />
+          <Icon size={18} className="text-wp-accent" strokeWidth={1.75} />
         </div>
         <div>
-          <h3 className="font-body font-semibold text-wp-black" style={{ fontSize: 14 }}>
+          <h3 className="font-body font-semibold text-wp-black" style={{ fontSize: 13 }}>
             {tip.title}
           </h3>
-          <p className="mt-1.5 font-body text-wp-tan-dark" style={{ fontSize: 13, lineHeight: 1.55 }}>
+          <p className="mt-1 font-body text-wp-tan-dark" style={{ fontSize: 12, lineHeight: 1.5 }}>
             {tip.description}
           </p>
         </div>
@@ -123,53 +94,47 @@ function TipCard({ tip }: { tip: Tip }) {
   )
 }
 
-export default function CareerTab({ profile, breakdown, onLogPft }: CareerTabProps) {
+export default function CareerTab({ profile, breakdown, compositeHistory, onLogPft }: CareerTabProps) {
   const [showPftModal, setShowPftModal] = useState(false)
+  const [showScoreDetail, setShowScoreDetail] = useState(false)
 
   return (
     <div>
-      <ScoreCard profile={profile} />
+      <ScoreCard profile={profile} onOpen={() => setShowScoreDetail(true)} />
 
-      <BreakdownSection breakdown={breakdown} />
+      <div className="grid grid-cols-3 gap-2.5 mt-4">
+        <button
+          onClick={() => setShowPftModal(true)}
+          className="flex flex-col items-center justify-center gap-1.5 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light"
+          style={{ height: 56, fontSize: 12 }}
+        >
+          <Dumbbell size={20} />
+          Log PFT
+        </button>
+        <button
+          className="flex flex-col items-center justify-center gap-1.5 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
+          style={{ height: 56, fontSize: 12 }}
+        >
+          <Crosshair size={20} />
+          Log Rifle
+        </button>
+        <button
+          className="flex flex-col items-center justify-center gap-1.5 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
+          style={{ height: 56, fontSize: 12 }}
+        >
+          <Award size={20} />
+          Log PME
+        </button>
+      </div>
 
-      <div className="mt-8">
-        <h2 className="font-heading font-bold text-wp-black mb-4" style={{ fontSize: 18, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
+      <div className="mt-5">
+        <h2 className="font-heading font-bold text-wp-black mb-3" style={{ fontSize: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
           What You Can Do
         </h2>
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {tips.map(tip => (
             <TipCard key={tip.id} tip={tip} />
           ))}
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <h2 className="font-heading font-bold text-wp-black mb-4" style={{ fontSize: 18, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-          Quick Log
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => setShowPftModal(true)}
-            className="flex items-center gap-2 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg px-5 cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light"
-            style={{ height: 44, fontSize: 14 }}
-          >
-            <Dumbbell size={18} />
-            Log PFT
-          </button>
-          <button
-            className="flex items-center gap-2 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg px-5 cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
-            style={{ height: 44, fontSize: 14 }}
-          >
-            <Crosshair size={18} />
-            Log Rifle
-          </button>
-          <button
-            className="flex items-center gap-2 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg px-5 cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
-            style={{ height: 44, fontSize: 14 }}
-          >
-            <Award size={18} />
-            Log PME
-          </button>
         </div>
       </div>
 
@@ -177,6 +142,15 @@ export default function CareerTab({ profile, breakdown, onLogPft }: CareerTabPro
         <PftModal
           onClose={() => setShowPftModal(false)}
           onSubmit={onLogPft}
+        />
+      )}
+
+      {showScoreDetail && (
+        <ScoreDetailOverlay
+          profile={profile}
+          breakdown={breakdown}
+          compositeHistory={compositeHistory}
+          onClose={() => setShowScoreDetail(false)}
         />
       )}
     </div>
