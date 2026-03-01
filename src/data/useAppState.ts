@@ -56,12 +56,17 @@ const RANK_DISPLAY: Record<string, string> = {
   Sgt: 'E-5 (Sergeant)',
 }
 
+const NOTIFICATION_PROMPT_KEY = 'wp_notification_prompt_shown'
+
 export function useAppState() {
   const [profile, setProfile] = useState<UserProfile>({ ...defaultProfile })
   const [breakdown, setBreakdown] = useState<ScoreBreakdown[]>([...scoreBreakdown])
   const [history, setHistory] = useState([...pftHistory])
   const [compositeHist, setCompositeHist] = useState([...compositeHistory])
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set())
+  const [notificationPromptShown, setNotificationPromptShown] = useState(
+    () => sessionStorage.getItem(NOTIFICATION_PROMPT_KEY) === 'true'
+  )
 
   const logPft = useCallback((pullUps: number, crunches: number, runMinutes: number, runSeconds: number) => {
     const newPftScore = calculatePftScore(pullUps, crunches, runMinutes, runSeconds)
@@ -102,6 +107,9 @@ export function useAppState() {
   }, [profile, breakdown])
 
   const submitOnboarding = useCallback((data: OnboardingData) => {
+    sessionStorage.removeItem(NOTIFICATION_PROMPT_KEY)
+    setNotificationPromptShown(false)
+
     const composite = calcComposite(data.pftScore, data.cftScore, data.rifleScore, data.avgProMark, data.avgConMark)
     const pftCft = Math.min(data.pftScore + data.cftScore, 600)
     const proConAvg = (data.avgProMark + data.avgConMark) / 2
@@ -145,7 +153,14 @@ export function useAppState() {
     setCompositeHist([{ month: 'Current', score: composite }])
   }, [])
 
+  const markNotificationShown = useCallback(() => {
+    sessionStorage.setItem(NOTIFICATION_PROMPT_KEY, 'true')
+    setNotificationPromptShown(true)
+  }, [])
+
   const resetToMockData = useCallback(() => {
+    sessionStorage.removeItem(NOTIFICATION_PROMPT_KEY)
+    setNotificationPromptShown(false)
     setProfile({ ...defaultProfile })
     setBreakdown([...scoreBreakdown])
     setHistory([...pftHistory])
@@ -165,5 +180,5 @@ export function useAppState() {
     })
   }, [])
 
-  return { profile, breakdown, history, compositeHist, bookmarks, logPft, submitOnboarding, resetToMockData, toggleBookmark }
+  return { profile, breakdown, history, compositeHist, bookmarks, notificationPromptShown, logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown }
 }
