@@ -2,8 +2,11 @@ import { useState } from 'react'
 import ContourBackground from './components/ContourBackground'
 import Header from './components/Header'
 import TabBar from './components/TabBar'
+import MenuDrawer from './components/MenuDrawer'
+import OnboardingFlow from './components/OnboardingFlow'
 import type { TabId } from './components/TabBar'
 import { useAppState } from './data/useAppState'
+import type { OnboardingData } from './data/useAppState'
 import CareerTab from './tabs/CareerTab'
 import FitnessTab from './tabs/FitnessTab'
 import PocketbookTab from './tabs/PocketbookTab'
@@ -18,9 +21,21 @@ const tabMeta: Record<TabId, { title: string; subtitle?: string }> = {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('career')
-  const { profile, breakdown, history, bookmarks, logPft, toggleBookmark } = useAppState()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [onboardingOpen, setOnboardingOpen] = useState(false)
+  const { profile, breakdown, history, bookmarks, logPft, submitOnboarding, resetToMockData, toggleBookmark } = useAppState()
 
-  const meta = tabMeta[activeTab]
+  const careerSubtitle = `${profile.name} — ${profile.mos.split(' ')[0]}`
+  const meta: { title: string; subtitle?: string } = {
+    ...tabMeta[activeTab],
+    ...(activeTab === 'career' ? { subtitle: careerSubtitle } : {}),
+  }
+
+  function handleOnboardingComplete(data: OnboardingData) {
+    submitOnboarding(data)
+    setOnboardingOpen(false)
+    setActiveTab('career')
+  }
 
   return (
     <div className="h-full bg-wp-tan-dark flex items-start justify-center">
@@ -29,7 +44,7 @@ export default function App() {
       <div className="relative h-full w-full max-w-[428px] flex flex-col bg-wp-bg overflow-hidden"
         style={{ boxShadow: '0 0 40px rgba(0,0,0,0.18)' }}
       >
-        <Header title={meta.title} subtitle={meta.subtitle} />
+        <Header title={meta.title} subtitle={meta.subtitle} onMenuOpen={() => setMenuOpen(true)} />
 
         <main
           className="flex-1 overflow-y-auto relative z-10 px-4 pt-6"
@@ -49,6 +64,20 @@ export default function App() {
 
         <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
+
+      <MenuDrawer
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onStartOnboarding={() => setOnboardingOpen(true)}
+        onResetData={resetToMockData}
+      />
+
+      {onboardingOpen && (
+        <OnboardingFlow
+          onComplete={handleOnboardingComplete}
+          onDismiss={() => setOnboardingOpen(false)}
+        />
+      )}
     </div>
   )
 }

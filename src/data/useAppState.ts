@@ -17,6 +17,36 @@ export function getPftClass(score: number): string {
   return 'Below Standards'
 }
 
+function getCftClass(score: number): string {
+  if (score >= 235) return '1st Class'
+  if (score >= 200) return '2nd Class'
+  if (score >= 150) return '3rd Class'
+  return 'Below Standards'
+}
+
+function calcComposite(pft: number, cft: number, rifle: number, proMark: number, conMark: number): number {
+  const pftCft = Math.min(pft + cft, 600)
+  const rifleScore = Math.min(rifle, 350)
+  const pme = 100
+  const tis = 221
+  const proCon = Math.round((proMark + conMark) / 2 * 50)
+  return pftCft + rifleScore + pme + tis + proCon
+}
+
+export interface OnboardingData {
+  firstName: string
+  lastName: string
+  mosCode: string
+  dor: string
+  adbd: string
+  avgProMark: number
+  avgConMark: number
+  pftScore: number
+  cftScore: number
+  rifleScore: number
+  rifleBadge: string
+}
+
 export function useAppState() {
   const [profile, setProfile] = useState<UserProfile>({ ...defaultProfile })
   const [breakdown, setBreakdown] = useState<ScoreBreakdown[]>([...scoreBreakdown])
@@ -56,6 +86,56 @@ export function useAppState() {
     ])
   }, [profile, breakdown])
 
+  const submitOnboarding = useCallback((data: OnboardingData) => {
+    const composite = calcComposite(data.pftScore, data.cftScore, data.rifleScore, data.avgProMark, data.avgConMark)
+    const pftCft = Math.min(data.pftScore + data.cftScore, 600)
+    const proConAvg = (data.avgProMark + data.avgConMark) / 2
+    const proCon = Math.round(proConAvg * 50)
+
+    setProfile({
+      name: `LCpl ${data.lastName}`,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      mos: `${data.mosCode} - Rifleman`,
+      rank: 'E-3 (Lance Corporal)',
+      tis: '2 years 4 months',
+      tig: '1 year 1 month',
+      dor: data.dor,
+      adbd: data.adbd,
+      compositeScore: composite,
+      cuttingScore: 1510,
+      pft: data.pftScore,
+      pftClass: getPftClass(data.pftScore),
+      cft: data.cftScore,
+      cftClass: getCftClass(data.cftScore),
+      rifle: data.rifleScore,
+      rifleClass: data.rifleBadge,
+      pmeCompleted: true,
+      proCon: `${data.avgProMark.toFixed(1)} / ${data.avgConMark.toFixed(1)}`,
+      avgProMark: data.avgProMark,
+      avgConMark: data.avgConMark,
+      percentile: Math.min(99, Math.max(1, Math.round((composite / 1800) * 100))),
+      scoreTrend: 0,
+    })
+
+    setBreakdown([
+      { label: 'PFT/CFT', value: pftCft, max: 600 },
+      { label: 'Rifle Qualification', value: Math.min(data.rifleScore, 350), max: 350 },
+      { label: 'PME', value: 100, max: 150 },
+      { label: 'Time in Service', value: 221, max: 400 },
+      { label: 'Pro/Con Marks', value: proCon, max: 250 },
+    ])
+
+    setHistory([{ month: 'Current', score: data.pftScore }])
+  }, [])
+
+  const resetToMockData = useCallback(() => {
+    setProfile({ ...defaultProfile })
+    setBreakdown([...scoreBreakdown])
+    setHistory([...pftHistory])
+    setBookmarks(new Set())
+  }, [])
+
   const toggleBookmark = useCallback((id: string) => {
     setBookmarks(prev => {
       const next = new Set(prev)
@@ -68,5 +148,5 @@ export function useAppState() {
     })
   }, [])
 
-  return { profile, breakdown, history, bookmarks, logPft, toggleBookmark }
+  return { profile, breakdown, history, bookmarks, logPft, submitOnboarding, resetToMockData, toggleBookmark }
 }

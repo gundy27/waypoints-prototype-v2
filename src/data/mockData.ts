@@ -1,9 +1,13 @@
 export interface UserProfile {
   name: string
+  firstName: string
+  lastName: string
   mos: string
   rank: string
   tis: string
   tig: string
+  dor: string
+  adbd: string
   compositeScore: number
   cuttingScore: number
   pft: number
@@ -14,16 +18,22 @@ export interface UserProfile {
   rifleClass: string
   pmeCompleted: boolean
   proCon: string
+  avgProMark: number
+  avgConMark: number
   percentile: number
   scoreTrend: number
 }
 
 export const defaultProfile: UserProfile = {
   name: 'LCpl Martinez',
+  firstName: 'Miguel',
+  lastName: 'Martinez',
   mos: '0311 - Rifleman',
   rank: 'E-3 (Lance Corporal)',
   tis: '2 years 4 months',
   tig: '1 year 1 month',
+  dor: '2023-10-01',
+  adbd: '2021-06-15',
   compositeScore: 1432,
   cuttingScore: 1510,
   pft: 271,
@@ -34,6 +44,8 @@ export const defaultProfile: UserProfile = {
   rifleClass: 'Expert',
   pmeCompleted: true,
   proCon: '4.4 / 4.4',
+  avgProMark: 4.4,
+  avgConMark: 4.4,
   percentile: 72,
   scoreTrend: 14,
 }
