@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { OnboardingData } from '../data/useAppState'
 import { Slider } from './ui/slider'
@@ -366,61 +366,43 @@ function ProConStep({
   data: Step3Data
   onChange: (d: Step3Data) => void
 }) {
-  const [touched, setTouched] = useState<Record<string, boolean>>({})
-
-  function parseVal(s: string) { return parseFloat(s) }
-  const proVal = parseVal(data.avgProMark)
-  const conVal = parseVal(data.avgConMark)
-
-  const errors = {
-    avgProMark: touched.avgProMark && (isNaN(proVal) || proVal < 0 || proVal > 5) ? 'Enter a value between 0.0 and 5.0' : '',
-    avgConMark: touched.avgConMark && (isNaN(conVal) || conVal < 0 || conVal > 5) ? 'Enter a value between 0.0 and 5.0' : '',
-  }
-
-  function blur(field: string) {
-    setTouched(t => ({ ...t, [field]: true }))
-  }
+  const proVal = parseFloat(data.avgProMark) || 0
+  const conVal = parseFloat(data.avgConMark) || 0
 
   return (
-    <div className="space-y-5">
-      <div className="bg-wp-bg rounded-xl p-4 border border-wp-contour/50">
+    <div className="flex flex-col">
+      <div className="bg-wp-bg rounded-xl p-4 border border-wp-contour/50 mb-6">
         <p className="font-body text-wp-tan-dark" style={{ fontSize: 13, lineHeight: 1.55 }}>
           Pro and Con marks are scored 0.0 to 5.0 and are recorded on your FITREP/Counseling sheet. They directly contribute to your composite score.
         </p>
       </div>
-
-      <div>
-        <label className={labelClass} style={labelStyle}>Average Pro Mark</label>
-        <input
-          type="number"
-          step="0.1"
-          min="0"
-          max="5"
-          value={data.avgProMark}
-          onChange={e => onChange({ ...data, avgProMark: e.target.value })}
-          onBlur={() => blur('avgProMark')}
-          placeholder="e.g. 4.4"
-          className={inputClass}
-          style={inputStyle}
+      <div className="flex justify-around gap-4 px-2">
+        <VerticalSlider
+          label="Pro Mark"
+          value={proVal}
+          min={0}
+          max={5}
+          step={0.1}
+          ticks={PROCON_TICKS}
+          getClassification={getProConClass}
+          displayDecimals={1}
+          onChange={v => onChange({ ...data, avgProMark: v.toFixed(1) })}
         />
-        {errors.avgProMark && <p className={errorClass} style={errorStyle}>{errors.avgProMark}</p>}
-      </div>
-
-      <div>
-        <label className={labelClass} style={labelStyle}>Average Con Mark</label>
-        <input
-          type="number"
-          step="0.1"
-          min="0"
-          max="5"
-          value={data.avgConMark}
-          onChange={e => onChange({ ...data, avgConMark: e.target.value })}
-          onBlur={() => blur('avgConMark')}
-          placeholder="e.g. 4.4"
-          className={inputClass}
-          style={inputStyle}
+        <div
+          className="w-px self-stretch"
+          style={{ background: '#D2C4A8', marginTop: 28, marginBottom: 0 }}
         />
-        {errors.avgConMark && <p className={errorClass} style={errorStyle}>{errors.avgConMark}</p>}
+        <VerticalSlider
+          label="Con Mark"
+          value={conVal}
+          min={0}
+          max={5}
+          step={0.1}
+          ticks={PROCON_TICKS}
+          getClassification={getProConClass}
+          displayDecimals={1}
+          onChange={v => onChange({ ...data, avgConMark: v.toFixed(1) })}
+        />
       </div>
     </div>
   )
@@ -433,21 +415,93 @@ function getScoreClass(score: number): { label: string; color: string } {
   return { label: 'Below Std', color: '#CC3333' }
 }
 
-const SCORE_TICKS = [300, 225, 150, 75, 0]
+function getProConClass(score: number): { label: string; color: string } {
+  if (score >= 4.8) return { label: 'Outstanding', color: '#2D8A4E' }
+  if (score >= 4.0) return { label: 'Above Avg', color: '#D4940A' }
+  if (score >= 3.0) return { label: 'Average', color: '#A08060' }
+  return { label: 'Below Avg', color: '#CC3333' }
+}
 
-function FitnessSlider({
+function getRifleClass(score: number): { label: string; color: string } {
+  if (score >= 220) return { label: 'Expert', color: '#2D8A4E' }
+  if (score >= 210) return { label: 'Sharpshooter', color: '#D4940A' }
+  return { label: 'Marksman', color: '#A08060' }
+}
+
+const SCORE_TICKS = [300, 225, 150, 75, 0]
+const PROCON_TICKS = [5.0, 3.75, 2.5, 1.25, 0.0]
+const RIFLE_TICKS = [250, 235, 220, 205, 190]
+
+function VerticalSlider({
   label,
   value,
+  min,
+  max,
+  step,
+  ticks,
+  getClassification,
+  displayDecimals = 0,
   onChange,
+  flex = true,
 }: {
   label: string
   value: number
+  min: number
+  max: number
+  step: number
+  ticks: number[]
+  getClassification: (v: number) => { label: string; color: string }
+  displayDecimals?: number
   onChange: (v: number) => void
+  flex?: boolean
 }) {
-  const scoreClass = getScoreClass(value)
+  const [inputVal, setInputVal] = useState(value.toFixed(displayDecimals))
+  const classification = getClassification(value)
+
+  useEffect(() => {
+    setInputVal(value.toFixed(displayDecimals))
+  }, [value, displayDecimals])
+
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setInputVal(e.target.value)
+  }
+
+  function handleInputBlur() {
+    const parsed = parseFloat(inputVal)
+    if (!isNaN(parsed)) {
+      const clamped = Math.min(max, Math.max(min, parsed))
+      const rounded = Math.round(clamped / step) * step
+      onChange(rounded)
+      setInputVal(rounded.toFixed(displayDecimals))
+    } else {
+      setInputVal(value.toFixed(displayDecimals))
+    }
+  }
+
+  function handleSliderChange(v: number) {
+    onChange(v)
+    setInputVal(v.toFixed(displayDecimals))
+  }
 
   return (
-    <div className="flex flex-col items-center flex-1">
+    <div className={`flex flex-col items-center ${flex ? 'flex-1' : ''}`}>
+      <input
+        type="number"
+        value={inputVal}
+        onChange={handleInputChange}
+        onBlur={handleInputBlur}
+        step={step}
+        min={min}
+        max={max}
+        className="font-heading font-bold leading-none text-center bg-transparent border-none outline-none w-full"
+        style={{ fontSize: 32, color: '#1A1A1A', WebkitAppearance: 'none', MozAppearance: 'textfield' }}
+      />
+      <span
+        className="font-body font-semibold leading-none mb-1"
+        style={{ fontSize: 11, color: classification.color, letterSpacing: '0.04em' }}
+      >
+        {classification.label}
+      </span>
       <span
         className="font-body font-semibold mb-3 tracking-widest uppercase"
         style={{ fontSize: 11, color: '#A08060', letterSpacing: '0.08em' }}
@@ -460,7 +514,7 @@ function FitnessSlider({
           className="flex flex-col justify-between"
           style={{ paddingTop: 2, paddingBottom: 2 }}
         >
-          {SCORE_TICKS.map(tick => (
+          {ticks.map(tick => (
             <span
               key={tick}
               className="font-mono text-right leading-none"
@@ -473,31 +527,40 @@ function FitnessSlider({
 
         <Slider
           orientation="vertical"
-          min={0}
-          max={300}
-          step={1}
+          min={min}
+          max={max}
+          step={step}
           value={[value]}
-          onValueChange={([v]) => onChange(v)}
+          onValueChange={([v]) => handleSliderChange(v)}
           style={{ height: '100%' }}
           className="h-full"
         />
       </div>
-
-      <div className="flex flex-col items-center mt-4 gap-1">
-        <span
-          className="font-heading font-bold leading-none"
-          style={{ fontSize: 32, color: '#1A1A1A' }}
-        >
-          {value}
-        </span>
-        <span
-          className="font-body font-semibold leading-none"
-          style={{ fontSize: 11, color: scoreClass.color, letterSpacing: '0.04em' }}
-        >
-          {scoreClass.label}
-        </span>
-      </div>
     </div>
+  )
+}
+
+function FitnessSlider({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: (v: number) => void
+}) {
+  return (
+    <VerticalSlider
+      label={label}
+      value={value}
+      min={0}
+      max={300}
+      step={1}
+      ticks={SCORE_TICKS}
+      getClassification={getScoreClass}
+      displayDecimals={0}
+      onChange={onChange}
+    />
   )
 }
 
@@ -517,7 +580,7 @@ function FitnessStep({
         className="font-body text-center mb-6"
         style={{ fontSize: 13, color: '#A08060' }}
       >
-        Drag sliders up to set your scores
+        Add your latest fitness scores. Drag sliders up to set your scores.
       </p>
       <div className="flex justify-around gap-4 px-2">
         <FitnessSlider
@@ -550,10 +613,9 @@ function RifleStep({
 }) {
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
-  const rifleVal = parseInt(data.rifleScore, 10)
+  const rifleVal = parseInt(data.rifleScore, 10) || 190
 
   const errors = {
-    rifleScore: touched.rifleScore && (isNaN(rifleVal) || rifleVal < 190 || rifleVal > 250) ? 'Enter a score between 190 and 250' : '',
     rifleBadge: touched.rifleBadge && !data.rifleBadge ? 'Select a qualification level' : '',
   }
 
@@ -562,25 +624,10 @@ function RifleStep({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col">
       <div>
-        <label className={labelClass} style={labelStyle}>Rifle Score</label>
-        <input
-          type="number"
-          inputMode="numeric"
-          value={data.rifleScore}
-          onChange={e => onChange({ ...data, rifleScore: e.target.value })}
-          onBlur={() => blur('rifleScore')}
-          placeholder="e.g. 335"
-          className={inputClass}
-          style={inputStyle}
-        />
-        {errors.rifleScore && <p className={errorClass} style={errorStyle}>{errors.rifleScore}</p>}
-      </div>
-
-      <div>
-        <label className={labelClass} style={labelStyle}>Qualification Badge</label>
-        <div className="flex gap-2" onBlur={() => blur('rifleBadge')}>
+        <label className={`${labelClass} text-center`} style={labelStyle}>Qualification Badge</label>
+        <div className="flex gap-2 mb-6" onBlur={() => blur('rifleBadge')}>
           {BADGE_OPTIONS.map(badge => (
             <button
               key={badge}
@@ -599,7 +646,22 @@ function RifleStep({
             </button>
           ))}
         </div>
-        {errors.rifleBadge && <p className={errorClass} style={errorStyle}>{errors.rifleBadge}</p>}
+        {errors.rifleBadge && <p className={`${errorClass} text-center`} style={errorStyle}>{errors.rifleBadge}</p>}
+      </div>
+
+      <div className="flex justify-center">
+        <VerticalSlider
+          label="Rifle Score"
+          value={rifleVal}
+          min={190}
+          max={250}
+          step={1}
+          ticks={RIFLE_TICKS}
+          getClassification={getRifleClass}
+          displayDecimals={0}
+          onChange={v => onChange({ ...data, rifleScore: String(v) })}
+          flex={false}
+        />
       </div>
     </div>
   )
@@ -613,9 +675,9 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
 
   const [step1, setStep1] = useState<Step1Data>({ fullName: '', mosCode: '', rank: '' })
   const [step2, setStep2] = useState<Step2Data>({ dor: '', adbd: '' })
-  const [step3, setStep3] = useState<Step3Data>({ avgProMark: '', avgConMark: '' })
+  const [step3, setStep3] = useState<Step3Data>({ avgProMark: '0.0', avgConMark: '0.0' })
   const [step4, setStep4] = useState<Step4Data>({ pftScore: '0', cftScore: '0' })
-  const [step5, setStep5] = useState<Step5Data>({ rifleScore: '', rifleBadge: '' })
+  const [step5, setStep5] = useState<Step5Data>({ rifleScore: '190', rifleBadge: '' })
 
   const contentRef = useRef<HTMLDivElement>(null)
 
