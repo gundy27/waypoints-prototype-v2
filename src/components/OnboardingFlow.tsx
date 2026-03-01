@@ -34,28 +34,48 @@ function DateSelectInput({
   onChange: (iso: string) => void
   onBlur: () => void
 }) {
-  const parts = value ? value.split('-') : ['', '', '']
-  const year = parts[0] || ''
-  const month = parts[1] ? parseInt(parts[1], 10) : 0
-  const day = parts[2] ? parseInt(parts[2], 10) : 0
+  const externalParts = value ? value.split('-') : []
+  const [month, setMonth] = useState<number>(externalParts[1] ? parseInt(externalParts[1], 10) : 0)
+  const [day, setDay] = useState<number>(externalParts[2] ? parseInt(externalParts[2], 10) : 0)
+  const [year, setYear] = useState<string>(externalParts[0] || '')
 
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 30 }, (_, i) => currentYear - i)
   const daysInMonth = getDaysInMonth(month, parseInt(year, 10))
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
 
-  function update(m: number, d: number, y: string) {
-    if (!m || !d || !y) { onChange(''); return }
-    const mm = String(m).padStart(2, '0')
-    const dd = String(d).padStart(2, '0')
-    onChange(`${y}-${mm}-${dd}`)
+  function emit(m: number, d: number, y: string) {
+    if (m && d && y) {
+      const mm = String(m).padStart(2, '0')
+      const dd = String(d).padStart(2, '0')
+      onChange(`${y}-${mm}-${dd}`)
+    } else {
+      onChange('')
+    }
+  }
+
+  function handleMonthChange(val: string) {
+    const m = parseInt(val, 10) || 0
+    setMonth(m)
+    emit(m, day, year)
+  }
+
+  function handleDayChange(val: string) {
+    const d = parseInt(val, 10) || 0
+    setDay(d)
+    emit(month, d, year)
+  }
+
+  function handleYearChange(val: string) {
+    setYear(val)
+    emit(month, day, val)
   }
 
   return (
     <div className="flex gap-2" onBlur={onBlur}>
       <select
         value={month || ''}
-        onChange={e => update(parseInt(e.target.value, 10), day, year)}
+        onChange={e => handleMonthChange(e.target.value)}
         className={selectClass}
         style={{ height: 48, fontSize: 15, flex: '2 1 0' }}
       >
@@ -66,7 +86,7 @@ function DateSelectInput({
       </select>
       <select
         value={day || ''}
-        onChange={e => update(month, parseInt(e.target.value, 10), year)}
+        onChange={e => handleDayChange(e.target.value)}
         className={selectClass}
         style={{ height: 48, fontSize: 15, flex: '1 1 0' }}
       >
@@ -77,7 +97,7 @@ function DateSelectInput({
       </select>
       <select
         value={year}
-        onChange={e => update(month, day, e.target.value)}
+        onChange={e => handleYearChange(e.target.value)}
         className={selectClass}
         style={{ height: 48, fontSize: 15, flex: '2 1 0' }}
       >
