@@ -104,22 +104,22 @@ export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: Care
       <div className="grid grid-cols-3 gap-2.5 mt-4">
         <button
           onClick={() => setShowPftModal(true)}
-          className="flex flex-col items-center justify-center gap-1.5 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light"
-          style={{ height: 56, fontSize: 12 }}
+          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light"
+          style={{ height: 56, fontSize: 12, background: '#ebe1d1' }}
         >
           <Dumbbell size={20} />
           Log PFT
         </button>
         <button
-          className="flex flex-col items-center justify-center gap-1.5 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
-          style={{ height: 56, fontSize: 12 }}
+          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
+          style={{ height: 56, fontSize: 12, background: '#ebe1d1' }}
         >
           <Crosshair size={20} />
           Log Rifle
         </button>
         <button
-          className="flex flex-col items-center justify-center gap-1.5 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
-          style={{ height: 56, fontSize: 12 }}
+          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
+          style={{ height: 56, fontSize: 12, background: '#ebe1d1' }}
         >
           <Award size={20} />
           Log PME

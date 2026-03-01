@@ -281,7 +281,7 @@ Active: #CC4400
 
 **Secondary (Outline)**
 ```
-Background: transparent
+Background: #EBE1D1
 Border: 1.5px solid #D2B48C
 Text: #1A1A1A, 14px, 500 weight
 Border radius: 8px

@@ -178,8 +178,8 @@ function LogPftForm({ onLogPft }: { onLogPft: FitnessTabProps['onLogPft'] }) {
           <div className="flex gap-3 pt-1">
             <button
               onClick={handleCalculate}
-              className="flex-1 bg-transparent border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light"
-              style={{ height: 44, fontSize: 14 }}
+              className="flex-1 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light"
+              style={{ height: 44, fontSize: 14, background: '#ebe1d1' }}
             >
               Calculate
             </button>

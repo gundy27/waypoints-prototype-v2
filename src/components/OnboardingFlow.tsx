@@ -290,7 +290,7 @@ function Step1({
                   paddingTop: 8,
                   paddingBottom: 6,
                   borderColor: selected ? '#FF5522' : '#D2C4A8',
-                  background: selected ? '#FF5522' : 'transparent',
+                  background: selected ? '#FF5522' : '#ebe1d1',
                 }}
               >
                 <RankInsignia rank={rank} selected={selected} />
@@ -638,7 +638,7 @@ function RifleStep({
                 height: 44,
                 fontSize: 13,
                 borderColor: data.rifleBadge === badge ? '#FF5522' : '#D2C4A8',
-                background: data.rifleBadge === badge ? '#FF5522' : 'transparent',
+                background: data.rifleBadge === badge ? '#FF5522' : '#ebe1d1',
                 color: data.rifleBadge === badge ? '#FFFFFF' : '#1A1A1A',
               }}
             >
@@ -829,8 +829,8 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
           {step > 1 && (
             <button
               onClick={goBack}
-              className="flex items-center gap-1.5 bg-transparent border-[1.5px] border-wp-contour text-wp-black font-body font-semibold rounded-xl cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light shrink-0"
-              style={{ height: 52, paddingLeft: 16, paddingRight: 20, fontSize: 14 }}
+              className="flex items-center gap-1.5 border-[1.5px] border-wp-contour text-wp-black font-body font-semibold rounded-xl cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light shrink-0"
+              style={{ height: 52, paddingLeft: 16, paddingRight: 20, fontSize: 14, background: '#ebe1d1' }}
             >
               <ChevronLeft size={18} />
               Back
