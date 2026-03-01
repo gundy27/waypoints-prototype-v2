@@ -33,7 +33,7 @@
   body {
     font-family: var(--font-body);
     color: #1A1A1A;
-    background-color: #F5F1EB;
+    background-color: #000000;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
