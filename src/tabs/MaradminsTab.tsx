@@ -116,7 +116,24 @@ function MaradminDetail({ item, onBack }: { item: Maradmin; onBack: () => void }
 
       <div className="bg-wp-surface rounded-xl p-4 mb-4" style={cardShadow}>
         <pre className="font-mono text-wp-black whitespace-pre-wrap" style={{ fontSize: 12, lineHeight: 1.7 }}>
-          {item.fullText}
+          {item.fullText.split('\n').map((line, i) => {
+            const isHighlighted = /^\s+A\.\s/.test(line)
+            return (
+              <span
+                key={i}
+                style={isHighlighted ? {
+                  display: 'block',
+                  backgroundColor: '#FF552225',
+                  borderLeft: '3px solid #FF5522',
+                  paddingLeft: '6px',
+                  marginLeft: '-9px',
+                  borderRadius: '2px',
+                } : { display: 'block' }}
+              >
+                {line}
+              </span>
+            )
+          })}
         </pre>
       </div>
 
