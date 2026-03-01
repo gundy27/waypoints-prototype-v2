@@ -779,8 +779,16 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
 
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center bg-wp-tan-dark/60">
-      <div className="relative w-full max-w-[428px] h-full flex flex-col bg-wp-bg">
-      <div className="sticky top-0 z-10 bg-wp-bg/95 backdrop-blur-sm px-5 pt-5 pb-4 border-b border-wp-tan-light/50">
+      <div
+        className="relative w-full max-w-[428px] h-full flex flex-col"
+        style={{
+          backgroundImage: 'url(/tan-contours.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+      <div className="sticky top-0 z-10 bg-wp-bg/90 backdrop-blur-sm px-5 pt-5 pb-4 border-b border-wp-tan-light/50">
         <div className="flex items-center justify-between mb-3">
           <span className="font-body font-semibold text-wp-tan-dark" style={{ fontSize: 13 }}>
             Step {step} of {TOTAL_STEPS}
@@ -816,7 +824,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
         </div>
       </div>
 
-      <div className="px-5 pb-10 pt-4 border-t border-wp-tan-light/50 bg-wp-bg/95">
+      <div className="px-5 pb-10 pt-4 border-t border-wp-tan-light/50 bg-wp-bg/90 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           {step > 1 && (
             <button

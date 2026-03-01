@@ -41,13 +41,20 @@ export default function App() {
     <div className="h-full bg-wp-tan-dark flex items-start justify-center">
       <ContourBackground />
 
-      <div className="relative h-full w-full max-w-[428px] flex flex-col bg-wp-bg overflow-hidden"
-        style={{ boxShadow: '0 0 40px rgba(0,0,0,0.18)' }}
+      <div
+        className="relative h-full w-full max-w-[428px] flex flex-col overflow-hidden"
+        style={{
+          boxShadow: '0 0 40px rgba(0,0,0,0.18)',
+          backgroundImage: 'url(/tan-contours.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
       >
         <Header title={meta.title} subtitle={meta.subtitle} onMenuOpen={() => setMenuOpen(true)} />
 
         <main
-          className="flex-1 overflow-y-auto relative z-10 px-4 pt-6"
+          className="flex-1 overflow-y-auto relative z-10 px-4 pt-6 bg-transparent"
           style={{ paddingBottom: 32 }}
         >
           {activeTab === 'career' && (
