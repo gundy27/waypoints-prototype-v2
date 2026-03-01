@@ -4,6 +4,17 @@ import type { UserProfile, ScoreBreakdown, Tip } from '../data/mockData'
 import { tips } from '../data/mockData'
 import PftModal from '../components/PftModal'
 
+type TipStatus = 'Not Started' | 'Started' | 'Scheduled' | 'Completed'
+
+const STATUS_CYCLE: TipStatus[] = ['Not Started', 'Started', 'Scheduled', 'Completed']
+
+const STATUS_STYLES: Record<TipStatus, { bg: string; text: string; border: string }> = {
+  'Not Started': { bg: '#F5F1EB', text: '#A08060', border: '#D2C4A8' },
+  'Started':     { bg: '#FFF4E6', text: '#D4940A', border: '#F5C96A' },
+  'Scheduled':   { bg: '#E8F4FF', text: '#1A6BAD', border: '#90C4E8' },
+  'Completed':   { bg: '#EAF7EE', text: '#2D8A4E', border: '#82CDA0' },
+}
+
 interface CareerTabProps {
   profile: UserProfile
   breakdown: ScoreBreakdown[]
@@ -64,13 +75,14 @@ function ScoreCard({ profile, onOpen }: { profile: UserProfile; onOpen: () => vo
   )
 }
 
-function TipCard({ tip }: { tip: Tip }) {
+function TipCard({ tip, status, onCycleStatus }: { tip: Tip; status: TipStatus; onCycleStatus: () => void }) {
   const iconMap = {
     gap: Target,
     pme: BookOpen,
     cutting: FileText,
   }
   const Icon = iconMap[tip.icon]
+  const style = STATUS_STYLES[status]
 
   return (
     <div
@@ -81,10 +93,30 @@ function TipCard({ tip }: { tip: Tip }) {
         <div className="mt-0.5 shrink-0">
           <Icon size={18} className="text-wp-accent" strokeWidth={1.75} />
         </div>
-        <div>
-          <h3 className="font-body font-semibold text-wp-black" style={{ fontSize: 13 }}>
-            {tip.title}
-          </h3>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-body font-semibold text-wp-black" style={{ fontSize: 13 }}>
+              {tip.title}
+            </h3>
+            <button
+              onClick={onCycleStatus}
+              className="shrink-0 rounded-full font-body font-semibold cursor-pointer border transition-all duration-150 active:scale-95"
+              style={{
+                fontSize: 10,
+                paddingTop: 3,
+                paddingBottom: 3,
+                paddingLeft: 8,
+                paddingRight: 8,
+                background: style.bg,
+                color: style.text,
+                borderColor: style.border,
+                letterSpacing: '0.01em',
+                lineHeight: 1.4,
+              }}
+            >
+              {status}
+            </button>
+          </div>
           <p className="mt-1 font-body text-wp-tan-dark" style={{ fontSize: 12, lineHeight: 1.5 }}>
             {tip.description}
           </p>
@@ -96,6 +128,18 @@ function TipCard({ tip }: { tip: Tip }) {
 
 export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: CareerTabProps) {
   const [showPftModal, setShowPftModal] = useState(false)
+  const [tipStatuses, setTipStatuses] = useState<Record<number, TipStatus>>(
+    () => Object.fromEntries(tips.map(t => [t.id, 'Not Started' as TipStatus]))
+  )
+
+  function cycleTipStatus(id: number) {
+    setTipStatuses(prev => {
+      const current = prev[id]
+      const idx = STATUS_CYCLE.indexOf(current)
+      const next = STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length]
+      return { ...prev, [id]: next }
+    })
+  }
 
   return (
     <div>
@@ -132,7 +176,12 @@ export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: Care
         </h2>
         <div className="space-y-2.5">
           {tips.map(tip => (
-            <TipCard key={tip.id} tip={tip} />
+            <TipCard
+              key={tip.id}
+              tip={tip}
+              status={tipStatuses[tip.id]}
+              onCycleStatus={() => cycleTipStatus(tip.id)}
+            />
           ))}
         </div>
       </div>
