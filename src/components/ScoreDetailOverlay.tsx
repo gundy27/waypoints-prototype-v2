@@ -120,15 +120,20 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
   return (
     <div className="fixed inset-0 z-[90] flex items-start justify-center bg-black">
       <div
-        className="relative h-full w-full max-w-[428px] flex flex-col overflow-hidden"
-        style={{
-          backgroundImage: 'url(/tan-contours.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
+        className="relative h-full w-full max-w-[428px] flex flex-col overflow-hidden bg-wp-bg"
       >
-        <header className="shrink-0 bg-wp-bg/90 backdrop-blur-sm px-4 flex items-center border-b border-wp-tan-light/50" style={{ height: 56 }}>
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: 'url(/tan-contours.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.25,
+          }}
+        />
+
+        <header className="shrink-0 relative z-10 bg-wp-bg/90 backdrop-blur-sm px-4 flex items-center border-b border-wp-tan-light/50" style={{ height: 56 }}>
           <button
             onClick={onClose}
             className="flex items-center gap-1 bg-transparent border-none cursor-pointer p-0 -ml-1"
@@ -138,7 +143,7 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
           </button>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 pt-5 pb-8">
+        <main className="flex-1 overflow-y-auto relative z-10 px-4 pt-5 pb-8">
           <div className="flex items-baseline justify-between mb-1">
             <span className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.02em' }}>
               Composite Score

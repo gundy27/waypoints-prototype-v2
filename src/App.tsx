@@ -40,15 +40,22 @@ export default function App() {
     <div className="h-full bg-black flex items-start justify-center">
 
       <div
-        className="relative h-full w-full max-w-[428px] flex flex-col overflow-hidden"
+        className="relative h-full w-full max-w-[428px] flex flex-col overflow-hidden bg-wp-bg"
         style={{
           boxShadow: '0 0 40px rgba(0,0,0,0.18)',
-          backgroundImage: 'url(/tan-contours.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
         }}
       >
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: 'url(/tan-contours.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.25,
+          }}
+        />
+
         <Header title={meta.title} subtitle={meta.subtitle} onMenuOpen={() => setMenuOpen(true)} />
 
         <main

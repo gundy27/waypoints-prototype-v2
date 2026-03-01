@@ -7,6 +7,7 @@ export default function ContourBackground() {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+        opacity: 0.25,
       }}
     />
   )
