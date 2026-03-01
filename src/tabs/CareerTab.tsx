@@ -3,13 +3,13 @@ import { TrendingUp, Target, BookOpen, FileText, Dumbbell, Crosshair, Award, Che
 import type { UserProfile, ScoreBreakdown, Tip } from '../data/mockData'
 import { tips } from '../data/mockData'
 import PftModal from '../components/PftModal'
-import ScoreDetailOverlay from '../components/ScoreDetailOverlay'
 
 interface CareerTabProps {
   profile: UserProfile
   breakdown: ScoreBreakdown[]
   compositeHistory: { month: string; score: number }[]
   onLogPft: (pullUps: number, crunches: number, runMin: number, runSec: number) => void
+  onOpenScoreDetail: () => void
 }
 
 function ScoreCard({ profile, onOpen }: { profile: UserProfile; onOpen: () => void }) {
@@ -94,13 +94,12 @@ function TipCard({ tip }: { tip: Tip }) {
   )
 }
 
-export default function CareerTab({ profile, breakdown, compositeHistory, onLogPft }: CareerTabProps) {
+export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: CareerTabProps) {
   const [showPftModal, setShowPftModal] = useState(false)
-  const [showScoreDetail, setShowScoreDetail] = useState(false)
 
   return (
     <div>
-      <ScoreCard profile={profile} onOpen={() => setShowScoreDetail(true)} />
+      <ScoreCard profile={profile} onOpen={onOpenScoreDetail} />
 
       <div className="grid grid-cols-3 gap-2.5 mt-4">
         <button
@@ -145,14 +144,6 @@ export default function CareerTab({ profile, breakdown, compositeHistory, onLogP
         />
       )}
 
-      {showScoreDetail && (
-        <ScoreDetailOverlay
-          profile={profile}
-          breakdown={breakdown}
-          compositeHistory={compositeHistory}
-          onClose={() => setShowScoreDetail(false)}
-        />
-      )}
     </div>
   )
 }

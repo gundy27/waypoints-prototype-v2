@@ -3,6 +3,7 @@ import Header from './components/Header'
 import TabBar from './components/TabBar'
 import MenuDrawer from './components/MenuDrawer'
 import OnboardingFlow from './components/OnboardingFlow'
+import ScoreDetailOverlay from './components/ScoreDetailOverlay'
 import type { TabId } from './components/TabBar'
 import { useAppState } from './data/useAppState'
 import type { OnboardingData } from './data/useAppState'
@@ -22,6 +23,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('career')
   const [menuOpen, setMenuOpen] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
+  const [showScoreDetail, setShowScoreDetail] = useState(false)
   const { profile, breakdown, history, compositeHist, bookmarks, logPft, submitOnboarding, resetToMockData, toggleBookmark } = useAppState()
 
   const careerSubtitle = `${profile.name} — ${profile.mos.split(' ')[0]}`
@@ -63,7 +65,7 @@ export default function App() {
           style={{ paddingBottom: 32 }}
         >
           {activeTab === 'career' && (
-            <CareerTab profile={profile} breakdown={breakdown} compositeHistory={compositeHist} onLogPft={logPft} />
+            <CareerTab profile={profile} breakdown={breakdown} compositeHistory={compositeHist} onLogPft={logPft} onOpenScoreDetail={() => setShowScoreDetail(true)} />
           )}
           {activeTab === 'fitness' && (
             <FitnessTab profile={profile} history={history} onLogPft={logPft} />
@@ -88,6 +90,15 @@ export default function App() {
         <OnboardingFlow
           onComplete={handleOnboardingComplete}
           onDismiss={() => setOnboardingOpen(false)}
+        />
+      )}
+
+      {showScoreDetail && (
+        <ScoreDetailOverlay
+          profile={profile}
+          breakdown={breakdown}
+          compositeHistory={compositeHist}
+          onClose={() => setShowScoreDetail(false)}
         />
       )}
     </div>
