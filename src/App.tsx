@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import ContourBackground from './components/ContourBackground'
 import Header from './components/Header'
 import TabBar from './components/TabBar'
 import MenuDrawer from './components/MenuDrawer'
@@ -38,8 +37,7 @@ export default function App() {
   }
 
   return (
-    <div className="h-full bg-wp-tan-dark flex items-start justify-center">
-      <ContourBackground />
+    <div className="h-full bg-black flex items-start justify-center">
 
       <div
         className="relative h-full w-full max-w-[428px] flex flex-col overflow-hidden"

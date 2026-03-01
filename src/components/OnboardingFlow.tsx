@@ -778,7 +778,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       }
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center bg-wp-tan-dark/60">
+    <div className="fixed inset-0 z-[80] flex items-start justify-center bg-black">
       <div
         className="relative w-full max-w-[428px] h-full flex flex-col"
         style={{
