@@ -172,7 +172,7 @@ export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: Care
 
       <div className="mt-5">
         <h2 className="font-heading font-bold text-wp-black mb-3" style={{ fontSize: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-          What You Can Do
+          Action Plan
         </h2>
         <div className="space-y-2.5">
           {tips.map(tip => (
