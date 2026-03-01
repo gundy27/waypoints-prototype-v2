@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { OnboardingData } from '../data/useAppState'
+import { Slider } from './ui/slider'
 
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void
@@ -296,6 +297,81 @@ function Step2({
   )
 }
 
+function getScoreClass(score: number): { label: string; color: string } {
+  if (score >= 235) return { label: '1st Class', color: '#2D8A4E' }
+  if (score >= 200) return { label: '2nd Class', color: '#D4940A' }
+  if (score >= 150) return { label: '3rd Class', color: '#D4940A' }
+  return { label: 'Below Std', color: '#CC3333' }
+}
+
+const SCORE_TICKS = [300, 225, 150, 75, 0]
+
+function FitnessSlider({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: (v: number) => void
+}) {
+  const scoreClass = getScoreClass(value)
+
+  return (
+    <div className="flex flex-col items-center flex-1">
+      <span
+        className="font-body font-semibold mb-3 tracking-widest uppercase"
+        style={{ fontSize: 11, color: '#A08060', letterSpacing: '0.08em' }}
+      >
+        {label}
+      </span>
+
+      <div className="flex items-stretch gap-3" style={{ height: 240 }}>
+        <div
+          className="flex flex-col justify-between"
+          style={{ paddingTop: 2, paddingBottom: 2 }}
+        >
+          {SCORE_TICKS.map(tick => (
+            <span
+              key={tick}
+              className="font-mono text-right leading-none"
+              style={{ fontSize: 10, color: '#A08060', minWidth: 24 }}
+            >
+              {tick}
+            </span>
+          ))}
+        </div>
+
+        <Slider
+          orientation="vertical"
+          min={0}
+          max={300}
+          step={1}
+          value={[value]}
+          onValueChange={([v]) => onChange(v)}
+          style={{ height: '100%' }}
+          className="h-full"
+        />
+      </div>
+
+      <div className="flex flex-col items-center mt-4 gap-1">
+        <span
+          className="font-heading font-bold leading-none"
+          style={{ fontSize: 32, color: '#1A1A1A' }}
+        >
+          {value}
+        </span>
+        <span
+          className="font-body font-semibold leading-none"
+          style={{ fontSize: 11, color: scoreClass.color, letterSpacing: '0.04em' }}
+        >
+          {scoreClass.label}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 function Step3({
   data,
   onChange,
@@ -303,72 +379,32 @@ function Step3({
   data: Step3Data
   onChange: (d: Step3Data) => void
 }) {
-  const [touched, setTouched] = useState<Record<string, boolean>>({})
-
-  const pftVal = parseInt(data.pftScore, 10)
-  const cftVal = parseInt(data.cftScore, 10)
-
-  const errors = {
-    pftScore: touched.pftScore && (isNaN(pftVal) || pftVal < 0 || pftVal > 300) ? 'Enter a score between 0 and 300' : '',
-    cftScore: touched.cftScore && (isNaN(cftVal) || cftVal < 0 || cftVal > 300) ? 'Enter a score between 0 and 300' : '',
-  }
-
-  function blur(field: string) {
-    setTouched(t => ({ ...t, [field]: true }))
-  }
-
-  function getClass(score: number): string {
-    if (isNaN(score)) return ''
-    if (score >= 235) return '1st Class'
-    if (score >= 200) return '2nd Class'
-    if (score >= 150) return '3rd Class'
-    return 'Below Standards'
-  }
+  const pftVal = parseInt(data.pftScore, 10) || 0
+  const cftVal = parseInt(data.cftScore, 10) || 0
 
   return (
-    <div className="space-y-5">
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className={labelClass} style={{ ...labelStyle, marginBottom: 0 }}>PFT Score</label>
-          {data.pftScore && !isNaN(pftVal) && (
-            <span className="font-body font-semibold text-wp-accent" style={{ fontSize: 12 }}>
-              {getClass(pftVal)}
-            </span>
-          )}
-        </div>
-        <input
-          type="number"
-          inputMode="numeric"
-          value={data.pftScore}
-          onChange={e => onChange({ ...data, pftScore: e.target.value })}
-          onBlur={() => blur('pftScore')}
-          placeholder="e.g. 271"
-          className={inputClass}
-          style={inputStyle}
+    <div className="flex flex-col">
+      <p
+        className="font-body text-center mb-6"
+        style={{ fontSize: 13, color: '#A08060' }}
+      >
+        Drag sliders up to set your scores
+      </p>
+      <div className="flex justify-around gap-4 px-2">
+        <FitnessSlider
+          label="PFT"
+          value={pftVal}
+          onChange={v => onChange({ ...data, pftScore: String(v) })}
         />
-        {errors.pftScore && <p className={errorClass} style={errorStyle}>{errors.pftScore}</p>}
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className={labelClass} style={{ ...labelStyle, marginBottom: 0 }}>CFT Score</label>
-          {data.cftScore && !isNaN(cftVal) && (
-            <span className="font-body font-semibold text-wp-accent" style={{ fontSize: 12 }}>
-              {getClass(cftVal)}
-            </span>
-          )}
-        </div>
-        <input
-          type="number"
-          inputMode="numeric"
-          value={data.cftScore}
-          onChange={e => onChange({ ...data, cftScore: e.target.value })}
-          onBlur={() => blur('cftScore')}
-          placeholder="e.g. 285"
-          className={inputClass}
-          style={inputStyle}
+        <div
+          className="w-px self-stretch"
+          style={{ background: '#D2C4A8', marginTop: 28, marginBottom: 0 }}
         />
-        {errors.cftScore && <p className={errorClass} style={errorStyle}>{errors.cftScore}</p>}
+        <FitnessSlider
+          label="CFT"
+          value={cftVal}
+          onChange={v => onChange({ ...data, cftScore: String(v) })}
+        />
       </div>
     </div>
   )
@@ -448,7 +484,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
 
   const [step1, setStep1] = useState<Step1Data>({ firstName: '', lastName: '', mosCode: '', dor: '', adbd: '' })
   const [step2, setStep2] = useState<Step2Data>({ avgProMark: '', avgConMark: '' })
-  const [step3, setStep3] = useState<Step3Data>({ pftScore: '', cftScore: '' })
+  const [step3, setStep3] = useState<Step3Data>({ pftScore: '0', cftScore: '0' })
   const [step4, setStep4] = useState<Step4Data>({ rifleScore: '', rifleBadge: '' })
 
   const contentRef = useRef<HTMLDivElement>(null)
