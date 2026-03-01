@@ -140,6 +140,18 @@ body {
 - Content should be fluid within this range
 - No horizontal scroll — ever
 
+### CRITICAL: Mobile Column Constraint
+
+**All UI — without exception — must be contained within the `max-w-[428px]` mobile column.**
+
+This applies to every feature, component, overlay, modal, drawer, popup, prompt, or sheet:
+
+- Overlays and backdrops must be positioned **relative to the mobile column**, not the browser viewport
+- Use `absolute` positioning inside the mobile column container — never `fixed` or `absolute` relative to `<body>` or a full-screen wrapper
+- The mobile column is the `relative` ancestor: `className="relative h-full w-full max-w-[428px] ..."`
+- Nothing should bleed outside this column or span the full browser/desktop width
+- Rendered within the mobile column correctly, `absolute inset-0` will fill exactly the mobile viewport — this is the correct pattern
+
 ### Spacing Scale
 
 ```
@@ -506,3 +518,4 @@ A starting point for the background pattern. Adjust paths for variety.
 - Overload any single screen — if it feels crowded, break it into sections
 - Use decorative animations — every motion should have purpose
 - Add drop shadows heavier than the specs above — keep it flat and clean
+- **Ever render any UI outside the `max-w-[428px]` mobile column** — modals, drawers, popups, sheets, and overlays must all stay within this column

@@ -97,6 +97,13 @@ export default function App() {
         </main>
 
         <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+
+        {showNotificationPrompt && (
+          <NotificationPrompt
+            mosCode={profile.mos.split(' ')[0]}
+            onDismiss={handleNotificationDismiss}
+          />
+        )}
       </div>
 
       <MenuDrawer
@@ -122,14 +129,6 @@ export default function App() {
         />
       )}
 
-      {showNotificationPrompt && (
-        <div className="absolute inset-0 z-[100]">
-          <NotificationPrompt
-            mosCode={profile.mos.split(' ')[0]}
-            onDismiss={handleNotificationDismiss}
-          />
-        </div>
-      )}
     </div>
   )
 }
