@@ -331,6 +331,42 @@ export const pocketbookCategories: PocketbookCategory[] = [
     ],
   },
   {
+    id: 'fitness',
+    title: 'Physical Fitness Standards',
+    items: [
+      {
+        id: 'f1',
+        title: 'PFT Scoring (Male, 17–26)',
+        content:
+          'The Physical Fitness Test (PFT) consists of Pull-ups (max 100 pts), Crunches or Plank (max 100 pts), and a 3-mile run (max 100 pts) for a maximum of 300 points.\n\nPull-ups: 1st Class = 23+, 2nd Class = 18–22, 3rd Class = 4–17.\nCrunches (2 min): 1st Class = 105+, 2nd Class = 80–104, 3rd Class = 50–79.\n3-Mile Run: 1st Class = sub-19:30, 2nd Class = sub-23:00, 3rd Class = sub-27:40.\n\nClass thresholds — 1st Class: 225–300 pts. 2nd Class: 175–224 pts. 3rd Class: 135–174 pts. Failure: below 135 pts.',
+      },
+      {
+        id: 'f2',
+        title: 'CFT Scoring (Male, 17–26)',
+        content:
+          'The Combat Fitness Test (CFT) consists of an 880-yard sprint (Movement to Contact), Ammunition Lift (30 lb ammo can overhead, max reps in 2 min), and Maneuver Under Fire (300-yard course) for a maximum of 300 points.\n\nMovement to Contact: 1st Class = sub-2:45, 2nd Class = sub-3:25, 3rd Class = sub-4:10.\nAmmunition Lift: 1st Class = 71+ reps, 2nd Class = 50–70 reps, 3rd Class = 21–49 reps.\nManeuver Under Fire: 1st Class = sub-2:45, 2nd Class = sub-3:25, 3rd Class = sub-4:35.\n\nClass thresholds — 1st Class: 270–300 pts. 2nd Class: 225–269 pts. 3rd Class: 150–224 pts. Failure: below 150 pts.',
+      },
+      {
+        id: 'f3',
+        title: 'PFT & CFT Impact on JEPES',
+        content:
+          'PFT and CFT scores contribute to the Physical Toughness category of the JEPES composite score (max 250 pts).\n\nPFT points (max 125): Score ÷ 300 × 125.\nCFT points (max 125): Score ÷ 300 × 125.\n\nAchieving a perfect 300 on both tests earns the full 250 Physical Toughness points. A 1st Class PFT (225+) and 1st Class CFT (270+) are the floor for competitive composite scores. Improving either test score directly raises your JEPES.',
+      },
+      {
+        id: 'f4',
+        title: 'Rifle Qualification Classes',
+        content:
+          'Annual rifle qualification is conducted at the rifle range using the prescribed qualification course.\n\nScoring thresholds (Table 1 & 2 combined, max 500 pts):\nExpert: 420–500 pts\nSharpshooter: 350–419 pts\nMarksman: 305–349 pts\nUnqualified (Re-qual required): below 305 pts\n\nExpert qualification earns 5 bonus JEPES points. Maintaining Expert through consecutive years reflects sustained proficiency and is noted favorably in command input evaluations.',
+      },
+      {
+        id: 'f5',
+        title: 'MCMAP Belt Levels',
+        content:
+          'Marine Corps Martial Arts Program (MCMAP) belts represent progressive combat and character training.\n\nTan Belt: Entry level, required for all Marines.\nGray Belt: Typically earned in formal schooling.\nGreen Belt: Journeyman level; required for NCO promotion board eligibility.\nBrown Belt: Intermediate instructor-level proficiency.\nBlack Belt: Advanced level, required for SNCO promotion board eligibility.\n\nEarning a belt above Tan contributes to the Warfighting category of your JEPES score and demonstrates commitment to personal development.',
+      },
+    ],
+  },
+  {
     id: 'promotions',
     title: 'Promotion Requirements',
     items: [
