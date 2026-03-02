@@ -7,6 +7,7 @@ interface AccountTabProps {
   profile: UserProfile
   onStartOnboarding: () => void
   onResetData: () => void
+  onOpenNotifications: () => void
 }
 
 type PlaceholderActionId = 'editProfile' | 'notifications' | 'helpFeedback' | 'signOut'
@@ -66,7 +67,7 @@ function ActionRow({
   )
 }
 
-export default function AccountTab({ profile, onStartOnboarding, onResetData }: AccountTabProps) {
+export default function AccountTab({ profile, onStartOnboarding, onResetData, onOpenNotifications }: AccountTabProps) {
   const [lastPlaceholder, setLastPlaceholder] = useState<PlaceholderActionId | null>(null)
 
   const rankCode = useMemo(() => parseRankCodeFromName(profile.name), [profile.name])
@@ -156,8 +157,11 @@ export default function AccountTab({ profile, onStartOnboarding, onResetData }: 
         <ActionRow
           icon={<Bell size={18} className="text-wp-accent" strokeWidth={1.75} />}
           title="Notification Preferences"
-          subtitle="Coming soon"
-          onClick={() => setLastPlaceholder('notifications')}
+          subtitle="Topics, tiers, and quiet hours"
+          onClick={() => {
+            setLastPlaceholder(null)
+            onOpenNotifications()
+          }}
         />
 
         <ActionRow

@@ -6,6 +6,7 @@ export interface AppNotification {
   id: string
   title: string
   description: string
+  reason?: string
   read: boolean
   targetTab?: TabId
 }
@@ -129,6 +130,11 @@ export default function NotificationBell({
                     <p className="mt-0.5 font-body" style={{ fontSize: 12, color: '#A08060', lineHeight: 1.45 }}>
                       {notification.description}
                     </p>
+                    {notification.reason && (
+                      <p className="mt-1 font-body font-medium px-2 py-0.5 rounded-md inline-block" style={{ fontSize: 11, color: '#FF5522', backgroundColor: 'rgba(255,85,34,0.08)', lineHeight: 1.4 }}>
+                        {notification.reason}
+                      </p>
+                    )}
                   </div>
                 </button>
               ))

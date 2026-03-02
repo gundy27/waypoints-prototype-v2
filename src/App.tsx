@@ -8,6 +8,7 @@ import NotificationBell from './components/NotificationBell'
 import type { AppNotification } from './components/NotificationBell'
 import PostOnboardingPlaceholder from './components/PostOnboardingPlaceholder'
 import PftModal from './components/PftModal'
+import NotificationPreferencesOverlay from './components/NotificationPreferencesOverlay'
 import type { TabId } from './components/TabBar'
 import { useAppState } from './data/useAppState'
 import type { OnboardingData } from './data/useAppState'
@@ -28,6 +29,7 @@ const INITIAL_NOTIFICATIONS: AppNotification[] = [
     id: 'maradmin-045-25',
     title: 'Cutting Score Dropped',
     description: 'MARADMIN 045/25: Cutting score for 0311 dropped 20 points this quarter to 780.',
+    reason: '0311 cutting score changed: 800 → 780',
     read: false,
     targetTab: 'maradmins',
   },
@@ -40,6 +42,7 @@ export default function App() {
   const [showScoreDetail, setShowScoreDetail] = useState(false)
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false)
   const [showPftModal, setShowPftModal] = useState(false)
+  const [showNotifPrefs, setShowNotifPrefs] = useState(false)
   const [bellOpen, setBellOpen] = useState(false)
   const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS)
   const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -155,6 +158,7 @@ export default function App() {
               profile={profile}
               onStartOnboarding={() => setOnboardingOpen(true)}
               onResetData={resetToMockData}
+              onOpenNotifications={() => setShowNotifPrefs(true)}
             />
           )}
         </main>
@@ -195,6 +199,13 @@ export default function App() {
           <PftModal
             onClose={() => setShowPftModal(false)}
             onSubmit={logPft}
+          />
+        )}
+
+        {showNotifPrefs && (
+          <NotificationPreferencesOverlay
+            mosCode={profile.mos.split(' ')[0]}
+            onClose={() => setShowNotifPrefs(false)}
           />
         )}
       </div>
