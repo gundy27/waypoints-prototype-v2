@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, R
 import type { UserProfile, ScoreBreakdown } from '../data/mockData'
 import TabBar from './TabBar'
 import type { TabId } from './TabBar'
+import { getPromotionWindowLabel } from '../data/useAppState'
 
 interface ScoreDetailOverlayProps {
   profile: UserProfile
@@ -164,7 +165,7 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
               JEPES Score
             </span>
             <span className="font-body font-semibold text-wp-accent" style={{ fontSize: 14 }}>
-              Top {100 - profile.percentile}%
+              {getPromotionWindowLabel(profile.promotionWindowStart, profile.promotionWindowEnd)}
             </span>
           </div>
 

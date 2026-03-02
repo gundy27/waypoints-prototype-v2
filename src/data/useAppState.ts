@@ -2,6 +2,41 @@ import { useState, useCallback } from 'react'
 import { defaultProfile, scoreBreakdown, pftHistory, compositeHistory } from './mockData'
 import type { UserProfile, ScoreBreakdown } from './mockData'
 
+export function getPromotionWindowLabel(windowStart: string, windowEnd: string): string {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const start = new Date(windowStart)
+  const end = new Date(windowEnd)
+
+  if (today >= start && today <= end) {
+    return 'In Window'
+  }
+
+  const target = today < start ? start : (() => {
+    const next = new Date(start)
+    while (next <= today) {
+      next.setMonth(next.getMonth() + 6)
+    }
+    return next
+  })()
+
+  const diffMs = target.getTime() - today.getTime()
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+  return `T-${days} days`
+}
+
+export function calcPromotionWindow(dor: string): { promotionWindowStart: string; promotionWindowEnd: string } {
+  const dorDate = new Date(dor)
+  const windowStart = new Date(dorDate)
+  windowStart.setFullYear(windowStart.getFullYear() + 1)
+  const windowEnd = new Date(windowStart)
+  windowEnd.setDate(windowEnd.getDate() + 29)
+  return {
+    promotionWindowStart: windowStart.toISOString().slice(0, 10),
+    promotionWindowEnd: windowEnd.toISOString().slice(0, 10),
+  }
+}
+
 export function calculatePftScore(pullUps: number, crunches: number, runMinutes: number, runSeconds: number): number {
   const pullUpScore = Math.min(pullUps * 5, 100)
   const crunchScore = Math.min(crunches, 100)
@@ -192,7 +227,6 @@ export function useAppState() {
         prev.crbReferrals,
       )
       const newComposite = calcComposite(components)
-      const newPercentile = Math.min(99, Math.max(1, Math.round((newComposite / 1000) * 100)))
 
       const now = new Date()
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -214,7 +248,6 @@ export function useAppState() {
         pft: newPftScore,
         pftClass,
         compositeScore: newComposite,
-        percentile: newPercentile,
         scoreTrend: newComposite - prev.compositeScore,
       }
     })
@@ -273,7 +306,7 @@ export function useAppState() {
       inServicePoints: 0,
       sdaAssignment: data.sdaAssignment,
       crbReferrals: data.crbReferrals,
-      percentile: Math.min(99, Math.max(1, Math.round((composite / 1000) * 100))),
+      ...calcPromotionWindow(data.dor),
       scoreTrend: 0,
     })
 

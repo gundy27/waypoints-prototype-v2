@@ -3,6 +3,7 @@ import { TrendingUp, Target, BookOpen, FileText, Dumbbell, Crosshair, Award, Che
 import type { UserProfile, ScoreBreakdown, Tip } from '../data/mockData'
 import { tips } from '../data/mockData'
 import { RankInsignia, getNextRank, isRankCode } from '../components/RankInsignia'
+import { getPromotionWindowLabel } from '../data/useAppState'
 
 type TipStatus = 'Not Started' | 'Started' | 'Scheduled' | 'Completed'
 
@@ -47,7 +48,7 @@ function ScoreCard({ profile, onOpen }: { profile: UserProfile; onOpen: () => vo
             className="font-body font-bold"
             style={{ fontSize: 12, color: '#FF5522', background: 'rgba(255,85,34,0.10)', borderRadius: 4, padding: '2px 7px', letterSpacing: '0.02em' }}
           >
-            Top {100 - profile.percentile}%
+            {getPromotionWindowLabel(profile.promotionWindowStart, profile.promotionWindowEnd)}
           </span>
           <ChevronRight size={16} className="text-wp-tan-dark" />
         </div>

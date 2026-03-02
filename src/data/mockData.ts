@@ -28,7 +28,8 @@ export interface UserProfile {
   inServicePoints: number
   sdaAssignment: string
   crbReferrals: number
-  percentile: number
+  promotionWindowStart: string
+  promotionWindowEnd: string
   scoreTrend: number
 }
 
@@ -62,7 +63,8 @@ export const defaultProfile: UserProfile = {
   inServicePoints: 0,
   sdaAssignment: 'None',
   crbReferrals: 0,
-  percentile: 64,
+  promotionWindowStart: '2026-04-01',
+  promotionWindowEnd: '2026-04-30',
   scoreTrend: 12,
 }
 
