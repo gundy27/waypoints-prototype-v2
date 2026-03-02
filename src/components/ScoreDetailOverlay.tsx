@@ -4,7 +4,6 @@ import type { UserProfile, ScoreBreakdown } from '../data/mockData'
 import type { CutScoreProjection } from '../data/cutScoreProjection'
 import TabBar from './TabBar'
 import type { TabId } from './TabBar'
-import { getPromotionWindowLabel } from '../data/useAppState'
 
 interface ScoreDetailOverlayProps {
   profile: UserProfile
@@ -206,9 +205,6 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
           <div className="flex items-baseline justify-between mb-1">
             <span className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.02em' }}>
               JEPES Score
-            </span>
-            <span className="font-body font-semibold text-wp-accent" style={{ fontSize: 14 }}>
-              {getPromotionWindowLabel(profile.promotionWindowStart, profile.promotionWindowEnd)}
             </span>
           </div>
 

@@ -1,7 +1,6 @@
 import { TrendingUp, TrendingDown, Target, BookOpen, Dumbbell, Award, ChevronRight, Clock, CheckCircle2, Calendar, Shield, Brain, Star, Zap } from 'lucide-react'
 import type { UserProfile, ScoreBreakdown, ScoreCategory } from '../data/mockData'
 import { RankInsignia, getNextRank, isRankCode } from '../components/RankInsignia'
-import { getPromotionWindowLabel } from '../data/useAppState'
 import type { PromotionWindow } from '../data/promotionTimeline'
 import { formatCountdown, formatShortDate } from '../data/promotionTimeline'
 import type { CutScoreProjection } from '../data/cutScoreProjection'
@@ -125,12 +124,6 @@ function ScoreCard({ profile, projection, onOpen }: { profile: UserProfile; proj
           Progress
         </p>
         <div className="flex items-center gap-2">
-          <span
-            className="font-body font-bold"
-            style={{ fontSize: 12, color: '#FF5522', background: 'rgba(255,85,34,0.10)', borderRadius: 4, padding: '2px 7px', letterSpacing: '0.02em' }}
-          >
-            {getPromotionWindowLabel(profile.promotionWindowStart, profile.promotionWindowEnd)}
-          </span>
           <ChevronRight size={16} className="text-wp-tan-dark" />
         </div>
       </div>
