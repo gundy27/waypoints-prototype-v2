@@ -148,6 +148,8 @@ export default function App() {
             breakdown={breakdown}
             compositeHistory={compositeHist}
             onClose={handleScoreDetailClose}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
           />
         )}
 

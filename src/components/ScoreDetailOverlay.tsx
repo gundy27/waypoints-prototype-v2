@@ -1,12 +1,16 @@
-import { ChevronLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
 import type { UserProfile, ScoreBreakdown } from '../data/mockData'
+import TabBar from './TabBar'
+import type { TabId } from './TabBar'
 
 interface ScoreDetailOverlayProps {
   profile: UserProfile
   breakdown: ScoreBreakdown[]
   compositeHistory: { month: string; score: number }[]
   onClose: () => void
+  activeTab: TabId
+  onTabChange: (tab: TabId) => void
 }
 
 const cardShadow = { boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }
@@ -117,8 +121,13 @@ function BreakdownSection({ breakdown }: { breakdown: ScoreBreakdown[] }) {
   )
 }
 
-export default function ScoreDetailOverlay({ profile, breakdown, compositeHistory, onClose }: ScoreDetailOverlayProps) {
+export default function ScoreDetailOverlay({ profile, breakdown, compositeHistory, onClose, activeTab, onTabChange }: ScoreDetailOverlayProps) {
   const gap = profile.cuttingScore - profile.compositeScore
+
+  function handleTabChange(tab: TabId) {
+    onClose()
+    onTabChange(tab)
+  }
 
   return (
     <div className="absolute inset-0 z-[90] bg-black">
@@ -137,17 +146,19 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
         />
 
         <header className="shrink-0 relative z-10 bg-wp-bg/90 backdrop-blur-sm px-4 flex items-center border-b border-wp-tan-light/50" style={{ height: 56 }}>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex items-center gap-1 bg-transparent border-none cursor-pointer p-0 -ml-1"
-          >
-            <ChevronLeft size={22} className="text-wp-accent" />
-            <span className="font-body font-medium text-wp-accent" style={{ fontSize: 15 }}>Back</span>
-          </button>
+          <h1 className="font-heading font-bold text-wp-black" style={{ fontSize: 20 }}>Score Breakdown</h1>
         </header>
 
         <main className="flex-1 overflow-y-auto relative z-10 px-4 pt-5 pb-8">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer p-0 mb-5 -ml-0.5"
+          >
+            <ArrowLeft size={18} className="text-wp-accent" />
+            <span className="font-body font-medium text-wp-accent" style={{ fontSize: 14 }}>Back</span>
+          </button>
+
           <div className="flex items-baseline justify-between mb-1">
             <span className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.02em' }}>
               JEPES Score
@@ -175,6 +186,8 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
 
           <BreakdownSection breakdown={breakdown} />
         </main>
+
+        <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
     </div>
   )
