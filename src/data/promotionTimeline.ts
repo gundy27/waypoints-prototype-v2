@@ -2,7 +2,7 @@ import { promotionRules } from './mockData'
 import type { PromotionEligibilityRule, UserProfile } from './mockData'
 
 /** Deterministic reference date for the prototype */
-export const CURRENT_DATE = new Date('2025-03-01')
+export const CURRENT_DATE = new Date('2026-02-01')
 
 export interface PromotionWindow {
   rule: PromotionEligibilityRule

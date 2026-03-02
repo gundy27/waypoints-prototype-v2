@@ -41,7 +41,7 @@ export const defaultProfile: UserProfile = {
   rank: 'E-3 (Lance Corporal)',
   tis: '1 year 5 months',
   tig: '3 months',
-  dor: '2024-12-01',
+  dor: '2025-11-01',
   compositeScore: 718,
   cuttingScore: 780,
   pft: 271,

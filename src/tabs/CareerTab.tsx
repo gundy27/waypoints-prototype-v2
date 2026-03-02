@@ -70,34 +70,21 @@ function PromotionWindowBanner({ window }: { window: PromotionWindow }) {
 
   return (
     <div className="mb-4" style={{ paddingTop: 2, paddingBottom: 2 }}>
-      {/* Section label */}
-      <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 10, letterSpacing: '0.06em', marginBottom: 10 }}>
-        Promotion Window
-      </p>
-
-      {/* Timeline container — extra top padding to accommodate floating countdown */}
-      <div className="relative" style={{ paddingTop: 32 }}>
-
-        {/* Floating countdown above the progress marker */}
-        <div
-          className="absolute"
-          style={{
-            left: `${progressPct}%`,
-            top: 0,
-            transform: 'translateX(-50%)',
-            textAlign: 'center',
-            whiteSpace: 'nowrap',
-          }}
+      {/* Header row */}
+      <div className="flex items-baseline justify-between gap-3" style={{ marginBottom: 10 }}>
+        <p className="font-body font-medium text-wp-tan-dark uppercase whitespace-nowrap" style={{ fontSize: 10, letterSpacing: '0.06em', marginBottom: 0 }}>
+          Promotion Window
+        </p>
+        <span
+          className="font-mono font-bold text-wp-black whitespace-nowrap"
+          style={{ fontSize: 'clamp(12px, 4.2vw, 17px)', letterSpacing: '-0.02em', lineHeight: 1 }}
         >
-          <span className="font-mono font-bold text-wp-black" style={{ fontSize: 17, letterSpacing: '-0.02em', lineHeight: 1 }}>
-            Opens in {formatCountdown(window.daysUntilEligible)}
-          </span>
-          {/* Connector tick */}
-          <div
-            className="mx-auto"
-            style={{ width: 1.5, height: 8, background: '#D4940A', opacity: 0.6, marginTop: 3 }}
-          />
-        </div>
+          Opens in {formatCountdown(window.daysUntilEligible)}
+        </span>
+      </div>
+
+      {/* Timeline container */}
+      <div>
 
         {/* Track row */}
         <div className="relative flex items-center" style={{ height: 20 }}>
@@ -203,6 +190,7 @@ function ScoreCard({ profile, projection, onOpen }: { profile: UserProfile; proj
       <div className="flex items-center gap-5">
         <div className="relative shrink-0" style={{ width: size, height: size }}>
           <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+            <title>Progress toward cutting score</title>
             <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#E8D5B7" strokeWidth={strokeWidth} />
             <circle
               cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#D2C4A8"

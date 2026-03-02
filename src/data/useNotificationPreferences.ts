@@ -1,10 +1,24 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-)
+let cachedClient: SupabaseClient | null = null
+
+function getSupabaseClient(): SupabaseClient | null {
+  if (cachedClient) return cachedClient
+
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+  if (!url || !anonKey) return null
+
+  try {
+    cachedClient = createClient(url, anonKey)
+    return cachedClient
+  } catch {
+    return null
+  }
+}
 
 export type NotificationTier = 'critical_only' | 'all'
 
@@ -51,10 +65,27 @@ export function useNotificationPreferences() {
   const [savedAt, setSavedAt] = useState<number | null>(null)
 
   const userId = getDeviceId()
+  const storageKey = `waypoints_notification_prefs:${userId}`
 
   useEffect(() => {
     async function load() {
       setLoading(true)
+
+      const supabase = getSupabaseClient()
+      if (!supabase) {
+        try {
+          const raw = localStorage.getItem(storageKey)
+          if (raw) {
+            const parsed = JSON.parse(raw) as NotificationPreferences
+            setPrefs({ ...DEFAULT_PREFS, ...parsed })
+          }
+        } catch {
+          // ignore invalid local cache
+        }
+        setLoading(false)
+        return
+      }
+
       const { data, error } = await supabase
         .from('notification_preferences')
         .select('*')
@@ -78,20 +109,31 @@ export function useNotificationPreferences() {
       setLoading(false)
     }
     load()
-  }, [userId])
+  }, [userId, storageKey])
 
   const save = useCallback(async (updated: NotificationPreferences) => {
     setSaving(true)
-    await supabase
-      .from('notification_preferences')
-      .upsert(
-        { user_id: userId, ...updated, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id' },
-      )
+    const supabase = getSupabaseClient()
+
+    if (!supabase) {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(updated))
+      } catch {
+        // ignore local write errors
+      }
+    } else {
+      await supabase
+        .from('notification_preferences')
+        .upsert(
+          { user_id: userId, ...updated, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' },
+        )
+    }
+
     setPrefs(updated)
     setSaving(false)
     setSavedAt(Date.now())
-  }, [userId])
+  }, [userId, storageKey])
 
   return { prefs, loading, saving, savedAt, save }
 }
