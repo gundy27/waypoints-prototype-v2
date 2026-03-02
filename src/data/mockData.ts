@@ -400,6 +400,143 @@ export const pocketbookCategories: PocketbookCategory[] = [
   },
 ]
 
+// ── Promotion eligibility rules ──────────────────────────────────────
+
+export interface PromotionEligibilityRule {
+  fromRank: string
+  toRank: string
+  toRankShort: string
+  tigMonthsRequired: number
+  tisMonthsRequired: number
+  pmeRequired: boolean
+  usesJepes: boolean
+}
+
+export const promotionRules: PromotionEligibilityRule[] = [
+  { fromRank: 'E-1 (Private)', toRank: 'E-2 (Private First Class)', toRankShort: 'PFC', tigMonthsRequired: 0, tisMonthsRequired: 6, pmeRequired: false, usesJepes: false },
+  { fromRank: 'E-2 (Private First Class)', toRank: 'E-3 (Lance Corporal)', toRankShort: 'LCpl', tigMonthsRequired: 8, tisMonthsRequired: 9, pmeRequired: false, usesJepes: false },
+  { fromRank: 'E-3 (Lance Corporal)', toRank: 'E-4 (Corporal)', toRankShort: 'Cpl', tigMonthsRequired: 8, tisMonthsRequired: 0, pmeRequired: false, usesJepes: true },
+  { fromRank: 'E-4 (Corporal)', toRank: 'E-5 (Sergeant)', toRankShort: 'Sgt', tigMonthsRequired: 12, tisMonthsRequired: 0, pmeRequired: true, usesJepes: true },
+]
+
+// ── Historical cut scores ────────────────────────────────────────────
+
+export interface CutScoreEntry {
+  mos: string
+  toRank: string
+  quarter: string
+  effectiveDate: string
+  score: number
+}
+
+export const cutScoreHistory: CutScoreEntry[] = [
+  // 0311 → Cpl (6 quarters, trending down ~14 pts/qtr)
+  { mos: '0311', toRank: 'Cpl', quarter: 'Q1 FY24', effectiveDate: '2023-12-01', score: 850 },
+  { mos: '0311', toRank: 'Cpl', quarter: 'Q2 FY24', effectiveDate: '2024-03-01', score: 830 },
+  { mos: '0311', toRank: 'Cpl', quarter: 'Q3 FY24', effectiveDate: '2024-06-01', score: 820 },
+  { mos: '0311', toRank: 'Cpl', quarter: 'Q4 FY24', effectiveDate: '2024-09-01', score: 810 },
+  { mos: '0311', toRank: 'Cpl', quarter: 'Q1 FY25', effectiveDate: '2024-12-01', score: 800 },
+  { mos: '0311', toRank: 'Cpl', quarter: 'Q2 FY25', effectiveDate: '2025-03-01', score: 780 },
+  // 0311 → Sgt
+  { mos: '0311', toRank: 'Sgt', quarter: 'Q1 FY24', effectiveDate: '2023-12-01', score: 920 },
+  { mos: '0311', toRank: 'Sgt', quarter: 'Q2 FY24', effectiveDate: '2024-03-01', score: 910 },
+  { mos: '0311', toRank: 'Sgt', quarter: 'Q3 FY24', effectiveDate: '2024-06-01', score: 895 },
+  { mos: '0311', toRank: 'Sgt', quarter: 'Q4 FY24', effectiveDate: '2024-09-01', score: 885 },
+  { mos: '0311', toRank: 'Sgt', quarter: 'Q1 FY25', effectiveDate: '2024-12-01', score: 870 },
+  { mos: '0311', toRank: 'Sgt', quarter: 'Q2 FY25', effectiveDate: '2025-03-01', score: 860 },
+]
+
+// ── Opportunities ────────────────────────────────────────────────────
+
+export type ScoreCategory = 'warfighting' | 'physicalToughness' | 'mentalAgility' | 'commandInput' | 'bonus'
+
+export interface Opportunity {
+  id: string
+  title: string
+  description: string
+  pointImpact: number
+  category: ScoreCategory
+  type: 'course' | 'event' | 'action' | 'test'
+  seasonal?: 'pft' | 'cft'
+  availableFrom?: string
+  availableUntil?: string
+  icon: 'book' | 'dumbbell' | 'target' | 'award' | 'calendar' | 'star'
+}
+
+export const opportunities: Opportunity[] = [
+  {
+    id: 'opp-1',
+    title: 'Complete Corporals Course',
+    description: 'Earn 50 Mental Agility points by completing the Corporals Course on MarineNet.',
+    pointImpact: 50,
+    category: 'mentalAgility',
+    type: 'course',
+    icon: 'book',
+  },
+  {
+    id: 'opp-2',
+    title: 'Max MarineNet MCIs',
+    description: 'Complete remaining MCI courses. Each CEU adds ~1.25 JEPES points, up to 50 total.',
+    pointImpact: 20,
+    category: 'mentalAgility',
+    type: 'course',
+    icon: 'book',
+  },
+  {
+    id: 'opp-3',
+    title: 'Improve PFT Score',
+    description: 'PFT season runs Jan–Jun. A higher score directly increases Physical Toughness points.',
+    pointImpact: 10,
+    category: 'physicalToughness',
+    type: 'test',
+    seasonal: 'pft',
+    availableFrom: '2025-01-01',
+    availableUntil: '2025-06-30',
+    icon: 'dumbbell',
+  },
+  {
+    id: 'opp-4',
+    title: 'Log CFT Score',
+    description: 'CFT season runs Jul–Dec. Maintain or improve your current score.',
+    pointImpact: 5,
+    category: 'physicalToughness',
+    type: 'test',
+    seasonal: 'cft',
+    availableFrom: '2025-07-01',
+    availableUntil: '2025-12-31',
+    icon: 'dumbbell',
+  },
+  {
+    id: 'opp-5',
+    title: 'Earn MOS Qualification Points',
+    description: 'PMOS courses can give up to 100 Mental Agility points. Check the qual list for your MOS.',
+    pointImpact: 30,
+    category: 'mentalAgility',
+    type: 'course',
+    icon: 'target',
+  },
+  {
+    id: 'opp-6',
+    title: 'Advance MCMAP Belt',
+    description: 'Progressing from Green (105 pts) to Green Instructor (120 pts) adds 15 Warfighting points.',
+    pointImpact: 15,
+    category: 'warfighting',
+    type: 'action',
+    icon: 'award',
+  },
+  {
+    id: 'opp-7',
+    title: 'Start Off-Duty College Courses',
+    description: 'Each in-grade college course earns 5 Mental Agility points (max 4 courses = 20 pts).',
+    pointImpact: 10,
+    category: 'mentalAgility',
+    type: 'course',
+    icon: 'book',
+  },
+]
+
+// ── MARADMINs ────────────────────────────────────────────────────────
+
 export interface Maradmin {
   id: number
   number: string

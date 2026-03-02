@@ -1,6 +1,12 @@
-import { useState, useCallback } from 'react'
-import { defaultProfile, scoreBreakdown, pftHistory, compositeHistory } from './mockData'
+import { useState, useCallback, useMemo } from 'react'
+import { defaultProfile, scoreBreakdown, pftHistory, compositeHistory, opportunities } from './mockData'
 import type { UserProfile, ScoreBreakdown } from './mockData'
+import { calculatePromotionWindow, CURRENT_DATE } from './promotionTimeline'
+import type { PromotionWindow } from './promotionTimeline'
+import { projectCutScore } from './cutScoreProjection'
+import type { CutScoreProjection } from './cutScoreProjection'
+import { rankOpportunities } from './opportunityEngine'
+import type { RankedOpportunity } from './opportunityEngine'
 
 export function getPromotionWindowLabel(windowStart: string, windowEnd: string): string {
   const today = new Date()
@@ -349,5 +355,43 @@ export function useAppState() {
     })
   }, [])
 
-  return { profile, breakdown, history, compositeHist, bookmarks, notificationPromptShown, logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown }
+  // ── Derived computed values ──────────────────────────────────────────
+
+  const promotionWindow: PromotionWindow | null = useMemo(
+    () => calculatePromotionWindow(profile),
+    [profile.rank, profile.dor],
+  )
+
+  const cutScoreProjection: CutScoreProjection | null = useMemo(() => {
+    if (!promotionWindow) return null
+    const mosCode = profile.mos.split(' ')[0]
+    const toRank = promotionWindow.rule.toRankShort
+    return projectCutScore(mosCode, toRank, promotionWindow.quarterLabel)
+  }, [profile.mos, promotionWindow])
+
+  const scoreComponents = useMemo(
+    () => calcScoreComponents(
+      profile.pft, profile.cft, profile.rifle, profile.mcmapBelt,
+      profile.commandInputAvg, profile.mosQualPoints, profile.mciCourses,
+      profile.degree, profile.inGradeCourses, profile.inServicePoints,
+      profile.sdaAssignment, profile.crbReferrals,
+    ),
+    [profile],
+  )
+
+  const rankedOpportunities: RankedOpportunity[] = useMemo(
+    () => rankOpportunities(opportunities, scoreComponents, promotionWindow),
+    [scoreComponents, promotionWindow],
+  )
+
+  const currentSeason: 'pft' | 'cft' = useMemo(() => {
+    const month = CURRENT_DATE.getMonth()
+    return month >= 0 && month <= 5 ? 'pft' : 'cft'
+  }, [])
+
+  return {
+    profile, breakdown, history, compositeHist, bookmarks, notificationPromptShown,
+    promotionWindow, cutScoreProjection, rankedOpportunities, currentSeason,
+    logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown,
+  }
 }

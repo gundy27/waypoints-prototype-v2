@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ReferenceArea, ResponsiveContainer } from 'recharts'
 import type { UserProfile, ScoreBreakdown } from '../data/mockData'
+import type { CutScoreProjection } from '../data/cutScoreProjection'
 import TabBar from './TabBar'
 import type { TabId } from './TabBar'
 import { getPromotionWindowLabel } from '../data/useAppState'
@@ -9,6 +10,7 @@ interface ScoreDetailOverlayProps {
   profile: UserProfile
   breakdown: ScoreBreakdown[]
   compositeHistory: { month: string; score: number }[]
+  cutScoreProjection: CutScoreProjection | null
   onClose: () => void
   activeTab: TabId
   onTabChange: (tab: TabId) => void
@@ -16,10 +18,12 @@ interface ScoreDetailOverlayProps {
 
 const cardShadow = { boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }
 
-function CompositeChart({ history, cuttingScore }: { history: { month: string; score: number }[]; cuttingScore: number }) {
+function CompositeChart({ history, cuttingScore, projection }: { history: { month: string; score: number }[]; cuttingScore: number; projection: CutScoreProjection | null }) {
   const scores = history.map(h => h.score)
-  const minScore = Math.min(...scores, cuttingScore)
-  const maxScore = Math.max(...scores, cuttingScore)
+  const projHigh = projection?.projectedHigh ?? cuttingScore
+  const projLow = projection?.projectedLow ?? cuttingScore
+  const minScore = Math.min(...scores, cuttingScore, projLow)
+  const maxScore = Math.max(...scores, cuttingScore, projHigh)
   const padding = 40
   const yMin = Math.floor((minScore - padding) / 50) * 50
   const yMax = Math.ceil((maxScore + padding) / 50) * 50
@@ -53,13 +57,23 @@ function CompositeChart({ history, cuttingScore }: { history: { month: string; s
               fontFamily: 'JetBrains Mono',
             }}
           />
+          {/* Projected cut score range band */}
+          {projection && (
+            <ReferenceArea
+              y1={projection.projectedLow}
+              y2={projection.projectedHigh}
+              fill="#CC3333"
+              fillOpacity={0.06}
+            />
+          )}
+          {/* Current cut line */}
           <ReferenceLine
             y={cuttingScore}
             stroke="#CC3333"
             strokeDasharray="6 4"
             strokeWidth={1.5}
             label={{
-              value: 'Cut Line',
+              value: projection ? 'Current Cut' : 'Cut Line',
               position: 'insideRight',
               textAnchor: 'end',
               offset: 10,
@@ -70,6 +84,26 @@ function CompositeChart({ history, cuttingScore }: { history: { month: string; s
               fontWeight: 600,
             }}
           />
+          {/* Projected mid line */}
+          {projection && projection.projectedMid !== cuttingScore && (
+            <ReferenceLine
+              y={projection.projectedMid}
+              stroke="#CC3333"
+              strokeDasharray="3 6"
+              strokeWidth={1}
+              label={{
+                value: 'Projected',
+                position: 'insideLeft',
+                textAnchor: 'start',
+                offset: 10,
+                dy: -6,
+                fill: '#CC3333',
+                fontSize: 10,
+                fontFamily: 'Inter',
+                fontWeight: 500,
+              }}
+            />
+          )}
           <Line
             type="monotone"
             dataKey="score"
@@ -80,6 +114,15 @@ function CompositeChart({ history, cuttingScore }: { history: { month: string; s
           />
         </LineChart>
       </ResponsiveContainer>
+      {/* Legend for projected range */}
+      {projection && (
+        <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-wp-tan-light/50">
+          <div className="w-3 h-2.5 rounded-sm" style={{ background: 'rgba(204,51,51,0.12)' }} />
+          <span className="font-body text-wp-tan-dark" style={{ fontSize: 11 }}>
+            Projected range for {projection.targetQuarter} ({projection.projectedLow}–{projection.projectedHigh})
+          </span>
+        </div>
+      )}
     </div>
   )
 }
@@ -122,7 +165,7 @@ function BreakdownSection({ breakdown }: { breakdown: ScoreBreakdown[] }) {
   )
 }
 
-export default function ScoreDetailOverlay({ profile, breakdown, compositeHistory, onClose, activeTab, onTabChange }: ScoreDetailOverlayProps) {
+export default function ScoreDetailOverlay({ profile, breakdown, compositeHistory, cutScoreProjection, onClose, activeTab, onTabChange }: ScoreDetailOverlayProps) {
   const gap = profile.cuttingScore - profile.compositeScore
 
   function handleTabChange(tab: TabId) {
@@ -183,7 +226,7 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
             )}
           </div>
 
-          <CompositeChart history={compositeHistory} cuttingScore={profile.cuttingScore} />
+          <CompositeChart history={compositeHistory} cuttingScore={profile.cuttingScore} projection={cutScoreProjection} />
 
           <BreakdownSection breakdown={breakdown} />
         </main>

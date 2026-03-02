@@ -44,7 +44,11 @@ export default function App() {
   const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS)
   const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const postOnboardingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { profile, breakdown, compositeHist, bookmarks, notificationPromptShown, logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown } = useAppState()
+  const {
+    profile, breakdown, compositeHist, bookmarks, notificationPromptShown,
+    promotionWindow, cutScoreProjection, rankedOpportunities, currentSeason,
+    logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown,
+  } = useAppState()
 
   function handleScoreDetailClose() {
     setShowScoreDetail(false)
@@ -136,6 +140,10 @@ export default function App() {
               profile={profile}
               breakdown={breakdown}
               compositeHistory={compositeHist}
+              promotionWindow={promotionWindow}
+              cutScoreProjection={cutScoreProjection}
+              rankedOpportunities={rankedOpportunities}
+              currentSeason={currentSeason}
               onOpenPftModal={() => setShowPftModal(true)}
               onOpenScoreDetail={() => setShowScoreDetail(true)}
             />
@@ -178,6 +186,7 @@ export default function App() {
             profile={profile}
             breakdown={breakdown}
             compositeHistory={compositeHist}
+            cutScoreProjection={cutScoreProjection}
             onClose={handleScoreDetailClose}
             activeTab={activeTab}
             onTabChange={setActiveTab}
