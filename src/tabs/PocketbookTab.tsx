@@ -1,7 +1,19 @@
 import { useState } from 'react'
-import { Search, ChevronRight, ChevronDown, ArrowLeft, Bookmark } from 'lucide-react'
+import { Search, ChevronRight, ChevronDown, ArrowLeft, Bookmark, Shirt, Shield, ScrollText, BookOpen, Users, BookMarked, Network, Dumbbell, TrendingUp, type LucideIcon } from 'lucide-react'
 import { pocketbookCategories } from '../data/mockData'
 import type { PocketbookCategory, PocketbookItem } from '../data/mockData'
+
+const categoryIcons: Record<string, LucideIcon> = {
+  'uniform': Shirt,
+  'rank': Shield,
+  'general-orders': ScrollText,
+  'code-of-conduct': BookOpen,
+  'leadership': Users,
+  'acronyms': BookMarked,
+  'chain-of-command': Network,
+  'fitness': Dumbbell,
+  'promotions': TrendingUp,
+}
 
 interface PocketbookTabProps {
   bookmarks: Set<string>
@@ -30,22 +42,27 @@ function CategoryList({
     : categories
 
   return (
-    <div className="space-y-3">
-      {filtered.map(cat => (
-        <button
-          key={cat.id}
-          onClick={() => onSelect(cat)}
-          className="w-full flex items-center justify-between bg-wp-surface rounded-xl p-4 text-left border-none cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light/30"
-          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
-        >
-          <span className="font-heading font-semibold text-wp-black" style={{ fontSize: 16, lineHeight: 1.3 }}>
-            {cat.title}
-          </span>
-          <ChevronRight size={20} className="text-wp-tan-dark shrink-0" />
-        </button>
-      ))}
+    <div className="grid grid-cols-2 gap-3">
+      {filtered.map(cat => {
+        const Icon = categoryIcons[cat.id]
+        return (
+          <button
+            key={cat.id}
+            onClick={() => onSelect(cat)}
+            className="flex flex-col items-center justify-center bg-wp-surface rounded-xl border-none cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light/30 text-center"
+            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)', padding: '20px 12px 18px' }}
+          >
+            <div className="flex items-center justify-center rounded-xl mb-3" style={{ width: 48, height: 48, backgroundColor: 'rgba(210,180,140,0.2)' }}>
+              {Icon && <Icon size={24} className="text-wp-accent" strokeWidth={1.75} />}
+            </div>
+            <span className="font-heading font-semibold text-wp-black" style={{ fontSize: 13, lineHeight: 1.35 }}>
+              {cat.title}
+            </span>
+          </button>
+        )
+      })}
       {filtered.length === 0 && (
-        <p className="text-center font-body text-wp-tan-dark py-8" style={{ fontSize: 14 }}>
+        <p className="col-span-2 text-center font-body text-wp-tan-dark py-8" style={{ fontSize: 14 }}>
           No results found
         </p>
       )}
