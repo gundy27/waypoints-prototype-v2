@@ -388,41 +388,22 @@ export default function CareerTab({
 
       {/* Score Category Tiles */}
       <div className="flex flex-wrap justify-center gap-2.5 mt-4">
-        <div
-          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
-          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
-        >
-          <Shield size={20} />
-          Log Warfighting
-        </div>
-        <div
-          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
-          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
-        >
-          <Dumbbell size={20} />
-          Log Physical Toughness
-        </div>
-        <div
-          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
-          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
-        >
-          <Brain size={20} />
-          Log Mental Agility
-        </div>
-        <div
-          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
-          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
-        >
-          <Star size={20} />
-          Log Command Input
-        </div>
-        <div
-          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
-          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
-        >
-          <Zap size={20} />
-          Log Bonus
-        </div>
+        {[
+          { icon: <Shield size={20} />, label: 'Log Warfighting' },
+          { icon: <Dumbbell size={20} />, label: 'Log Physical Toughness' },
+          { icon: <Brain size={20} />, label: 'Log Mental Agility' },
+          { icon: <Star size={20} />, label: 'Log Command Input' },
+          { icon: <Zap size={20} />, label: 'Log Bonus' },
+        ].map(({ icon, label }) => (
+          <div
+            key={label}
+            className="flex flex-col items-center justify-center gap-1 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg text-center"
+            style={{ height: 56, fontSize: 11, lineHeight: 1.25, background: '#ebe1d1', width: 'calc(33.333% - 7px)', padding: '0 4px' }}
+          >
+            {icon}
+            <span>{label}</span>
+          </div>
+        ))}
       </div>
 
       {/* Available to You — ranked opportunities */}
