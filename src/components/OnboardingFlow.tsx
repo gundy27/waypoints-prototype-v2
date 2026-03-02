@@ -814,7 +814,7 @@ function BonusStep({
 }
 
 export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlowProps) {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(0)
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
   const [animating, setAnimating] = useState(false)
   const [showCheck, setShowCheck] = useState(false)
@@ -840,6 +840,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
   const contentRef = useRef<HTMLDivElement>(null)
 
   function canAdvance(): boolean {
+    if (step === 0) return true
     if (step === 1) {
       return (
         step1.fullName.trim().length > 0 &&
@@ -875,8 +876,22 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
     return false
   }
 
+  function begin() {
+    if (animating) return
+    vibrate(20)
+    setDirection('forward')
+    setAnimating(true)
+    setStep(1)
+    setTimeout(() => setAnimating(false), 250)
+  }
+
   function goNext() {
     if (!canAdvance() || animating) return
+    if (step === 0) {
+      begin()
+      return
+    }
+
     vibrate(30)
 
     if (step < TOTAL_STEPS) {
@@ -930,7 +945,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
   }
 
   function goBack() {
-    if (step === 1 || animating) return
+    if (step === 0 || animating) return
     vibrate(20)
     setDirection('back')
     setAnimating(true)
@@ -964,106 +979,179 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       <div
         className="relative w-full h-full flex flex-col bg-wp-bg"
       >
-        <div
-          className="absolute inset-0 z-0 pointer-events-none"
-          style={{
-            backgroundImage: 'url(/tan-contours.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            opacity: 0.25,
-          }}
-        />
-      <div className="sticky top-0 z-10 bg-wp-bg/90 backdrop-blur-sm px-5 pt-5 pb-4 border-b border-wp-tan-light/50">
-        <div className="flex items-center justify-between mb-3">
-          <span className="font-body font-semibold text-wp-tan-dark" style={{ fontSize: 13 }}>
-            Step {step} of {TOTAL_STEPS}
-          </span>
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="font-body text-wp-tan-dark bg-transparent border-none cursor-pointer px-0"
-            style={{ fontSize: 14 }}
-          >
-            Cancel
-          </button>
-        </div>
+        {step === 0 ? (
+          <div className="relative w-full h-full">
+            <div
+              className="absolute inset-0 z-0"
+              style={{
+                backgroundImage: 'url(/welcome.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            />
+            <div
+              className="absolute inset-0 z-[1]"
+              style={{
+                background:
+                  'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.35) 35%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.80) 100%)',
+              }}
+            />
 
-        <div className="w-full h-1.5 bg-wp-tan-light rounded-full overflow-hidden">
-          <div
-            className="h-full bg-wp-accent rounded-full transition-all duration-400"
-            style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
-          />
-        </div>
+            <div className="relative z-10 h-full flex flex-col px-5 pt-6">
+              <div className="flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={onDismiss}
+                  className="font-body font-semibold text-white/90 bg-transparent border-none cursor-pointer px-0"
+                  style={{ fontSize: 14 }}
+                >
+                  Cancel
+                </button>
+              </div>
 
-        <h2 className="mt-3 font-heading font-bold text-wp-black" style={{ fontSize: 22, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
-          {stepTitles[step - 1]}
-        </h2>
-      </div>
+              <div className="flex-1 flex flex-col justify-center">
+                <h1
+                  className="font-heading font-bold text-white"
+                  style={{ fontSize: 34, lineHeight: 1.05, letterSpacing: '-0.03em' }}
+                >
+                  Welcome to Waypoints
+                </h1>
+                <p
+                  className="mt-2 font-heading font-semibold text-white/90"
+                  style={{ fontSize: 22, lineHeight: 1.2, letterSpacing: '-0.02em' }}
+                >
+                  Your career navigator
+                </p>
 
-      <div className="flex-1 overflow-y-auto px-5 pt-6 pb-8">
-        <div ref={contentRef} style={slideStyle}>
-          {step === 1 && <Step1 data={step1} onChange={setStep1} />}
-          {step === 2 && <WarfightingStep data={step2} onChange={setStep2} />}
-          {step === 3 && <MentalAgilityStep data={step3} onChange={setStep3} />}
-          {step === 4 && <FitnessStep data={step4} onChange={setStep4} />}
-          {step === 5 && <CommandInputStep data={step5} onChange={setStep5} />}
-          {step === 6 && <BonusStep data={step6} onChange={setStep6} />}
-        </div>
-      </div>
+                <p
+                  className="mt-5 font-body text-white/80"
+                  style={{ fontSize: 13, lineHeight: 1.45, maxWidth: 320 }}
+                >
+                  Please go to MCTFS to assist with onboarding
+                </p>
+              </div>
 
-      <div className="px-5 pb-10 pt-4 border-t border-wp-tan-light/50 bg-wp-bg">
-        <div className="flex items-center gap-3">
-          {step > 1 && (
-            <button
-              type="button"
-              onClick={goBack}
-              className="flex items-center gap-1.5 border-[1.5px] border-wp-contour text-wp-black font-body font-semibold rounded-xl cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light shrink-0"
-              style={{ height: 52, paddingLeft: 16, paddingRight: 20, fontSize: 14, background: '#ebe1d1' }}
-            >
-              <ChevronLeft size={18} />
-              Back
-            </button>
-          )}
+              <div
+                className="pb-10"
+                style={{ paddingBottom: 'max(40px, env(safe-area-inset-bottom))' }}
+              >
+                <button
+                  type="button"
+                  onClick={begin}
+                  className="w-full flex items-center justify-center bg-wp-accent text-white font-body font-semibold rounded-xl border-none cursor-pointer transition-all duration-150 active:opacity-95"
+                  style={{ height: 58, fontSize: 16 }}
+                >
+                  Let&apos;s Begin
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div
+              className="absolute inset-0 z-0 pointer-events-none"
+              style={{
+                backgroundImage: 'url(/tan-contours.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                opacity: 0.25,
+              }}
+            />
 
-          <button
-            type="button"
-            onClick={goNext}
-            disabled={!canAdvance()}
-            className="flex-1 flex items-center justify-center gap-2 bg-wp-accent text-white font-body font-semibold rounded-xl border-none cursor-pointer transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ height: 52, fontSize: 15 }}
-          >
-            {showCheck ? (
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true" focusable="false">
-                <circle cx="11" cy="11" r="10" stroke="white" strokeWidth="1.5" />
-                <path
-                  d="M6.5 11L9.5 14L15.5 8"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{
-                    strokeDasharray: 12,
-                    strokeDashoffset: 0,
-                    animation: 'drawCheck 0.3s ease-out forwards',
-                  }}
+            <div className="sticky top-0 z-10 bg-wp-bg/90 backdrop-blur-sm px-5 pt-5 pb-4 border-b border-wp-tan-light/50">
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-body font-semibold text-wp-tan-dark" style={{ fontSize: 13 }}>
+                  Step {step} of {TOTAL_STEPS}
+                </span>
+                <button
+                  type="button"
+                  onClick={onDismiss}
+                  className="font-body text-wp-tan-dark bg-transparent border-none cursor-pointer px-0"
+                  style={{ fontSize: 14 }}
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <div className="w-full h-1.5 bg-wp-tan-light rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-wp-accent rounded-full transition-all duration-400"
+                  style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
                 />
-              </svg>
-            ) : step < TOTAL_STEPS ? (
-              <>Next <ChevronRight size={18} /></>
-            ) : (
-              "Let's Go"
-            )}
-          </button>
-        </div>
-      </div>
+              </div>
 
-      <style>{`
-        @keyframes drawCheck {
-          from { stroke-dashoffset: 12; }
-          to { stroke-dashoffset: 0; }
-        }
-      `}</style>
+              <h2 className="mt-3 font-heading font-bold text-wp-black" style={{ fontSize: 22, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+                {stepTitles[step - 1]}
+              </h2>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 pt-6 pb-8">
+              <div ref={contentRef} style={slideStyle}>
+                {step === 1 && <Step1 data={step1} onChange={setStep1} />}
+                {step === 2 && <WarfightingStep data={step2} onChange={setStep2} />}
+                {step === 3 && <MentalAgilityStep data={step3} onChange={setStep3} />}
+                {step === 4 && <FitnessStep data={step4} onChange={setStep4} />}
+                {step === 5 && <CommandInputStep data={step5} onChange={setStep5} />}
+                {step === 6 && <BonusStep data={step6} onChange={setStep6} />}
+              </div>
+            </div>
+
+            <div className="px-5 pb-10 pt-4 border-t border-wp-tan-light/50 bg-wp-bg">
+              <div className="flex items-center gap-3">
+                {step > 0 && (
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    className="flex items-center gap-1.5 border-[1.5px] border-wp-contour text-wp-black font-body font-semibold rounded-xl cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light shrink-0"
+                    style={{ height: 52, paddingLeft: 16, paddingRight: 20, fontSize: 14, background: '#ebe1d1' }}
+                  >
+                    <ChevronLeft size={18} />
+                    Back
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={goNext}
+                  disabled={!canAdvance()}
+                  className="flex-1 flex items-center justify-center gap-2 bg-wp-accent text-white font-body font-semibold rounded-xl border-none cursor-pointer transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ height: 52, fontSize: 15 }}
+                >
+                  {showCheck ? (
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true" focusable="false">
+                      <circle cx="11" cy="11" r="10" stroke="white" strokeWidth="1.5" />
+                      <path
+                        d="M6.5 11L9.5 14L15.5 8"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                          strokeDasharray: 12,
+                          strokeDashoffset: 0,
+                          animation: 'drawCheck 0.3s ease-out forwards',
+                        }}
+                      />
+                    </svg>
+                  ) : step < TOTAL_STEPS ? (
+                    <>Next <ChevronRight size={18} /></>
+                  ) : (
+                    "Let's Go"
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <style>{`
+              @keyframes drawCheck {
+                from { stroke-dashoffset: 12; }
+                to { stroke-dashoffset: 0; }
+              }
+            `}</style>
+          </>
+        )}
       </div>
     </div>
   )
