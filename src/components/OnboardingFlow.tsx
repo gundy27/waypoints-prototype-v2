@@ -1012,7 +1012,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
         </div>
       </div>
 
-      <div className="px-5 pb-10 pt-4 border-t border-wp-tan-light/50 bg-wp-bg/90 backdrop-blur-sm">
+      <div className="px-5 pb-10 pt-4 border-t border-wp-tan-light/50 bg-wp-bg">
         <div className="flex items-center gap-3">
           {step > 1 && (
             <button
