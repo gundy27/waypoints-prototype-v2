@@ -332,7 +332,7 @@ export default function CareerTab({
       {rankedOpportunities.length > 0 && (
         <div className="mt-5">
           <h2 className="font-heading font-bold text-wp-black mb-3" style={{ fontSize: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-            Available to You
+            Waypoints
           </h2>
           <div className="space-y-2.5">
             {rankedOpportunities.slice(0, 3).map(ranked => (
