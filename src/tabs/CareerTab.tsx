@@ -40,7 +40,7 @@ function ScoreCard({ profile, onOpen }: { profile: UserProfile; onOpen: () => vo
     >
       <div className="flex items-center justify-between mb-4">
         <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 11, letterSpacing: '0.08em' }}>
-          Target Lock
+          Progress
         </p>
         <div className="flex items-center gap-2">
           <span
