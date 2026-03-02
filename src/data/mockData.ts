@@ -7,7 +7,6 @@ export interface UserProfile {
   tis: string
   tig: string
   dor: string
-  adbd: string
   compositeScore: number
   cuttingScore: number
   pft: number
@@ -17,9 +16,10 @@ export interface UserProfile {
   rifle: number
   rifleClass: string
   pmeCompleted: boolean
-  proCon: string
-  avgProMark: number
-  avgConMark: number
+  commandInputMosMission: number
+  commandInputLeadership: number
+  commandInputCharacter: number
+  commandInputAvg: number
   percentile: number
   scoreTrend: number
 }
@@ -33,7 +33,6 @@ export const defaultProfile: UserProfile = {
   tis: '2 years 4 months',
   tig: '1 year 1 month',
   dor: '2023-10-01',
-  adbd: '2021-06-15',
   compositeScore: 1432,
   cuttingScore: 1510,
   pft: 271,
@@ -43,9 +42,10 @@ export const defaultProfile: UserProfile = {
   rifle: 335,
   rifleClass: 'Expert',
   pmeCompleted: true,
-  proCon: '4.4 / 4.4',
-  avgProMark: 4.4,
-  avgConMark: 4.4,
+  commandInputMosMission: 4.4,
+  commandInputLeadership: 4.4,
+  commandInputCharacter: 4.4,
+  commandInputAvg: 4.4,
   percentile: 72,
   scoreTrend: 14,
 }
@@ -61,7 +61,7 @@ export const scoreBreakdown: ScoreBreakdown[] = [
   { label: 'Rifle Qualification', value: 335, max: 350 },
   { label: 'PME', value: 100, max: 150 },
   { label: 'Time in Service', value: 221, max: 400 },
-  { label: 'Pro/Con Marks', value: 220, max: 250 },
+  { label: 'Command Input', value: 220, max: 250 },
 ]
 
 export const pftHistory = [
@@ -334,13 +334,13 @@ export const pocketbookCategories: PocketbookCategory[] = [
         id: 'p3',
         title: 'E-4 (Cpl) Requirements',
         content:
-          'Composite score must meet or exceed the cutting score for MOS. Components include: rifle score, PFT/CFT, PME, Pro/Con marks, TIS, TIG. Cutting scores published quarterly via MARADMIN.',
+          'JEPES score must meet or exceed the cutting score for MOS. Components include: rifle score, PFT/CFT, PME, Command Input, TIS, TIG. Cutting scores published quarterly via MARADMIN.',
       },
       {
         id: 'p4',
         title: 'E-5 (Sgt) Requirements',
         content:
-          'Composite score must meet or exceed the cutting score for MOS. Must be a Corporal. Must complete required PME (Sergeants Course). Cutting scores published quarterly via MARADMIN.',
+          'JEPES score must meet or exceed the cutting score for MOS. Must be a Corporal. Must complete required PME (Sergeants Course). Cutting scores published quarterly via MARADMIN.',
       },
     ],
   },
@@ -365,13 +365,13 @@ export const maradmins: Maradmin[] = [
     date: 'Feb 15, 2025',
     title: 'FY25 Q2 Cutting Score Update',
     summary:
-      'Updated composite score cutting scores for promotion to Corporal and Sergeant across all MOSs effective March 1, 2025.',
+      'Updated JEPES score cutting scores for promotion to Corporal and Sergeant across all MOSs effective March 1, 2025.',
     tag: 'Promotions',
     affectsScore: true,
     fullText:
-      'R 151200Z FEB 25\nFM CMC WASHINGTON DC\nTO AL MARADMIN\nSUBJ/FY25 SECOND QUARTER ENLISTED COMPOSITE SCORE CUTTING SCORES\n\n1. THE FOLLOWING CUTTING SCORES ARE EFFECTIVE 1 MARCH 2025 FOR PROMOTION TO CPL AND SGT.\n\n2. MOS 0311 RIFLEMAN:\n   A. TO CPL: 1510 (PREV 1535, CHANGE: -25)\n   B. TO SGT: 1725 (PREV 1740, CHANGE: -15)\n\n3. MARINES WHO MEET OR EXCEED THE APPLICABLE CUTTING SCORE ON THE EFFECTIVE DATE WILL BE PROMOTED IAW CURRENT POLICY.\n\n4. COMMANDING OFFICERS SHALL ENSURE ALL ELIGIBLE MARINES ARE COUNSELED ON THEIR COMPOSITE SCORES AND AREAS FOR IMPROVEMENT.',
+      'R 151200Z FEB 25\nFM CMC WASHINGTON DC\nTO AL MARADMIN\nSUBJ/FY25 SECOND QUARTER ENLISTED JEPES SCORE CUTTING SCORES\n\n1. THE FOLLOWING CUTTING SCORES ARE EFFECTIVE 1 MARCH 2025 FOR PROMOTION TO CPL AND SGT.\n\n2. MOS 0311 RIFLEMAN:\n   A. TO CPL: 1510 (PREV 1535, CHANGE: -25)\n   B. TO SGT: 1725 (PREV 1740, CHANGE: -15)\n\n3. MARINES WHO MEET OR EXCEED THE APPLICABLE CUTTING SCORE ON THE EFFECTIVE DATE WILL BE PROMOTED IAW CURRENT POLICY.\n\n4. COMMANDING OFFICERS SHALL ENSURE ALL ELIGIBLE MARINES ARE COUNSELED ON THEIR JEPES SCORES AND AREAS FOR IMPROVEMENT.',
     whatItMeans:
-      'The cutting score for your MOS (0311) to make Corporal dropped 25 points to 1510. This means you need fewer points to promote. With your current composite of 1432, you are now 78 points away instead of 103. Focus on PFT improvement and starting your Corporals Course to close the remaining gap.',
+      'The cutting score for your MOS (0311) to make Corporal dropped 25 points to 1510. This means you need fewer points to promote. With your current JEPES of 1432, you are now 78 points away instead of 103. Focus on PFT improvement and starting your Corporals Course to close the remaining gap.',
   },
   {
     id: 2,
@@ -379,13 +379,13 @@ export const maradmins: Maradmin[] = [
     date: 'Feb 3, 2025',
     title: 'PME Requirements Update for FY25',
     summary:
-      'Clarifies Professional Military Education completion requirements and composite score points for promotion eligibility.',
+      'Clarifies Professional Military Education completion requirements and JEPES score points for promotion eligibility.',
     tag: 'PME',
     affectsScore: true,
     fullText:
-      'R 031400Z FEB 25\nFM CMC WASHINGTON DC\nTO AL MARADMIN\nSUBJ/FY25 PROFESSIONAL MILITARY EDUCATION REQUIREMENTS UPDATE\n\n1. THIS MARADMIN UPDATES PME REQUIREMENTS FOR COMPOSITE SCORE CALCULATION.\n\n2. EFFECTIVE IMMEDIATELY, MARINES WHO COMPLETE THE CORPORALS COURSE WILL RECEIVE AN ADDITIONAL 50 COMPOSITE SCORE POINTS.\n\n3. THE CORPORALS COURSE IS AVAILABLE VIA MARINENET AND MUST BE COMPLETED PRIOR TO THE CUTTING SCORE EFFECTIVE DATE TO COUNT TOWARD THAT QUARTER.\n\n4. COMMANDING OFFICERS WILL ENSURE ALL ELIGIBLE MARINES ARE ENROLLED AND TRACKING TOWARD COMPLETION.',
+      'R 031400Z FEB 25\nFM CMC WASHINGTON DC\nTO AL MARADMIN\nSUBJ/FY25 PROFESSIONAL MILITARY EDUCATION REQUIREMENTS UPDATE\n\n1. THIS MARADMIN UPDATES PME REQUIREMENTS FOR JEPES SCORE CALCULATION.\n\n2. EFFECTIVE IMMEDIATELY, MARINES WHO COMPLETE THE CORPORALS COURSE WILL RECEIVE AN ADDITIONAL 50 JEPES SCORE POINTS.\n\n3. THE CORPORALS COURSE IS AVAILABLE VIA MARINENET AND MUST BE COMPLETED PRIOR TO THE CUTTING SCORE EFFECTIVE DATE TO COUNT TOWARD THAT QUARTER.\n\n4. COMMANDING OFFICERS WILL ENSURE ALL ELIGIBLE MARINES ARE ENROLLED AND TRACKING TOWARD COMPLETION.',
     whatItMeans:
-      "Completing the Corporals Course on MarineNet now gives you 50 extra points on your composite score. Since you haven't started it yet, this is one of the fastest ways to close the 78-point gap to the cutting score. Start the course as soon as possible to have it count for next quarter's scores.",
+      "Completing the Corporals Course on MarineNet now gives you 50 extra points on your JEPES score. Since you haven't started it yet, this is one of the fastest ways to close the 78-point gap to the cutting score. Start the course as soon as possible to have it count for next quarter's scores.",
   },
   {
     id: 3,
@@ -399,7 +399,7 @@ export const maradmins: Maradmin[] = [
     fullText:
       'R 201000Z JAN 25\nFM CMC WASHINGTON DC\nTO AL MARADMIN\nSUBJ/CY2025 PHYSICAL FITNESS TEST AND COMBAT FITNESS TEST SCHEDULE\n\n1. THE FOLLOWING PFT/CFT TESTING WINDOWS ARE ESTABLISHED FOR CY2025:\n   A. PFT: 1 JAN - 30 JUN 2025\n   B. CFT: 1 JUL - 31 DEC 2025\n\n2. ALL SCORES MUST BE ENTERED INTO MCTFS NLT 15 DAYS AFTER THE TEST DATE.\n\n3. COMMANDERS WILL ENSURE ALL MARINES COMPLETE REQUIRED TESTING WITHIN THE DESIGNATED WINDOWS.',
     whatItMeans:
-      'PFT season runs January through June 2025. You still have time to take another PFT this season if you want to improve your score of 271. A higher PFT score directly increases your composite score for promotion.',
+      'PFT season runs January through June 2025. You still have time to take another PFT this season if you want to improve your score of 271. A higher PFT score directly increases your JEPES score for promotion.',
   },
   {
     id: 4,

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { OnboardingData } from '../data/useAppState'
 import { Slider } from './ui/slider'
+import { RankInsignia, RANKS, type RankCode } from './RankInsignia'
 
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void
@@ -73,10 +74,11 @@ function DateSelectInput({
   }
 
   return (
-    <div className="flex gap-2" onBlur={onBlur}>
+    <div className="flex gap-2">
       <select
         value={month || ''}
         onChange={e => handleMonthChange(e.target.value)}
+        onBlur={onBlur}
         className={selectClass}
         style={{ height: 48, fontSize: 15, flex: '2 1 0' }}
       >
@@ -88,6 +90,7 @@ function DateSelectInput({
       <select
         value={day || ''}
         onChange={e => handleDayChange(e.target.value)}
+        onBlur={onBlur}
         className={selectClass}
         style={{ height: 48, fontSize: 15, flex: '1 1 0' }}
       >
@@ -99,6 +102,7 @@ function DateSelectInput({
       <select
         value={year}
         onChange={e => handleYearChange(e.target.value)}
+        onBlur={onBlur}
         className={selectClass}
         style={{ height: 48, fontSize: 15, flex: '2 1 0' }}
       >
@@ -111,100 +115,28 @@ function DateSelectInput({
   )
 }
 
-type RankCode = 'PVT' | 'PFC' | 'LCpl' | 'Cpl' | 'Sgt'
-
-function RankInsignia({ rank, selected }: { rank: RankCode; selected: boolean }) {
-  const color = selected ? '#FFFFFF' : '#6B5A3E'
-  const dim = 48
-
-  const CrossedRifles = () => (
-    <g>
-      <line x1="8" y1="22" x2="40" y2="26" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
-      <line x1="8" y1="26" x2="40" y2="22" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
-      <rect x="6" y="20.5" width="6" height="3.5" rx="1" fill={color} />
-      <rect x="36" y="20.5" width="6" height="3.5" rx="1" fill={color} />
-      <rect x="6" y="24.5" width="6" height="3.5" rx="1" fill={color} />
-      <rect x="36" y="24.5" width="6" height="3.5" rx="1" fill={color} />
-    </g>
-  )
-
-  const Chevron = ({ y }: { y: number }) => (
-    <polyline
-      points={`10,${y + 7} 24,${y} 38,${y + 7}`}
-      fill="none"
-      stroke={color}
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  )
-
-  if (rank === 'PVT') {
-    return (
-      <svg width={dim} height={dim} viewBox="0 0 48 48">
-        <circle cx="24" cy="24" r="10" fill="none" stroke={color} strokeWidth="2" strokeDasharray="3 3" />
-      </svg>
-    )
-  }
-
-  if (rank === 'PFC') {
-    return (
-      <svg width={dim} height={dim} viewBox="0 0 48 48">
-        <CrossedRifles />
-        <Chevron y={8} />
-      </svg>
-    )
-  }
-
-  if (rank === 'LCpl') {
-    return (
-      <svg width={dim} height={dim} viewBox="0 0 48 48">
-        <CrossedRifles />
-        <Chevron y={8} />
-      </svg>
-    )
-  }
-
-  if (rank === 'Cpl') {
-    return (
-      <svg width={dim} height={dim} viewBox="0 0 48 48">
-        <CrossedRifles />
-        <Chevron y={4} />
-        <Chevron y={12} />
-      </svg>
-    )
-  }
-
-  if (rank === 'Sgt') {
-    return (
-      <svg width={dim} height={dim} viewBox="0 0 48 48">
-        <CrossedRifles />
-        <Chevron y={1} />
-        <Chevron y={9} />
-        <Chevron y={17} />
-      </svg>
-    )
-  }
-
-  return null
-}
-
-const RANKS: RankCode[] = ['PVT', 'PFC', 'LCpl', 'Cpl', 'Sgt']
-
 interface Step1Data {
   fullName: string
   mosCode: string
   rank: RankCode | ''
+  dor: string
 }
+
+type McmapBeltCode = 'MMA' | 'MMB' | 'MMC' | 'MMD' | 'MME' | 'MMF' | 'MMG+'
 
 interface Step2Data {
-  dor: string
-  adbd: string
+  destroys: number
+  mcmapBelt: McmapBeltCode | ''
 }
 
+type DegreeOption = 'None' | 'Associates' | 'Bachelors'
+type MosCqOption = 'None' | 'CDI' | 'CDQAR' | 'QASO'
+
 interface Step3Data {
-  avgProMark: string
-  avgConMark: string
+  marineNetCourses: number
+  degree: DegreeOption | ''
+  offDutyEducationCourses: number
+  mosCqs: MosCqOption[]
 }
 
 interface Step4Data {
@@ -213,8 +145,9 @@ interface Step4Data {
 }
 
 interface Step5Data {
-  rifleScore: string
-  rifleBadge: string
+  mosMission: string
+  leadership: string
+  character: string
 }
 
 function vibrate(pattern: number | number[]) {
@@ -236,6 +169,7 @@ function Step1({
     fullName: touched.fullName && !data.fullName.trim() ? 'Required' : '',
     mosCode: touched.mosCode && !/^\d{4}$/.test(data.mosCode) ? 'Enter a 4-digit MOS code' : '',
     rank: touched.rank && !data.rank ? 'Select your rank' : '',
+    dor: touched.dor && !data.dor ? 'Required' : '',
   }
 
   function blur(field: string) {
@@ -245,8 +179,9 @@ function Step1({
   return (
     <div className="space-y-5">
       <div>
-        <label className={labelClass} style={labelStyle}>Full Name</label>
+        <label htmlFor="onboard_fullName" className={labelClass} style={labelStyle}>Full Name</label>
         <input
+          id="onboard_fullName"
           type="text"
           value={data.fullName}
           onChange={e => onChange({ ...data, fullName: e.target.value })}
@@ -259,8 +194,9 @@ function Step1({
       </div>
 
       <div>
-        <label className={labelClass} style={labelStyle}>MOS Code</label>
+        <label htmlFor="onboard_mosCode" className={labelClass} style={labelStyle}>MOS Code</label>
         <input
+          id="onboard_mosCode"
           type="text"
           inputMode="numeric"
           maxLength={4}
@@ -275,7 +211,7 @@ function Step1({
       </div>
 
       <div>
-        <label className={labelClass} style={labelStyle}>Rank</label>
+        <p className={labelClass} style={labelStyle}>Rank</p>
         <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
           {RANKS.map(rank => {
             const selected = data.rank === rank
@@ -293,7 +229,7 @@ function Step1({
                   background: selected ? '#FF5522' : '#ebe1d1',
                 }}
               >
-                <RankInsignia rank={rank} selected={selected} />
+                <RankInsignia rank={rank} color={selected ? '#FFFFFF' : '#6B5A3E'} size={48} />
                 <span
                   className="font-body font-semibold leading-none mt-1"
                   style={{ fontSize: 11, color: selected ? '#FFFFFF' : '#1A1A1A' }}
@@ -306,11 +242,113 @@ function Step1({
         </div>
         {errors.rank && <p className={errorClass} style={errorStyle}>{errors.rank}</p>}
       </div>
+
+      <div>
+        <p className={labelClass} style={labelStyle}>Date of Rank</p>
+        <DateSelectInput
+          value={data.dor}
+          onChange={dor => onChange({ ...data, dor })}
+          onBlur={() => blur('dor')}
+        />
+        {errors.dor && <p className={errorClass} style={errorStyle}>{errors.dor}</p>}
+      </div>
     </div>
   )
 }
 
-function ImportantDatesStep({
+const MCMAP_OPTIONS: { code: McmapBeltCode; label: string }[] = [
+  { code: 'MMA', label: 'UNQUAL' },
+  { code: 'MMB', label: 'TAN' },
+  { code: 'MMC', label: 'Gray' },
+  { code: 'MMD', label: 'Green' },
+  { code: 'MME', label: 'Green Instructor' },
+  { code: 'MMF', label: 'Brown' },
+  { code: 'MMG+', label: 'Brown Instructor' },
+]
+
+const DEGREE_OPTIONS: DegreeOption[] = ['None', 'Associates', 'Bachelors']
+const MOS_CQ_OPTIONS: MosCqOption[] = ['None', 'CDI', 'CDQAR', 'QASO']
+
+function SelectTile({
+  top,
+  bottom,
+  selected,
+  onClick,
+}: {
+  top: string
+  bottom?: string
+  selected: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-xl border-[1.5px] cursor-pointer transition-all duration-150 text-left"
+      style={{
+        minHeight: 64,
+        paddingLeft: 12,
+        paddingRight: 12,
+        paddingTop: 10,
+        paddingBottom: 10,
+        borderColor: selected ? '#FF5522' : '#D2C4A8',
+        background: selected ? '#FF5522' : '#ebe1d1',
+        color: selected ? '#FFFFFF' : '#1A1A1A',
+      }}
+    >
+      <div className="flex flex-col">
+        <span className="font-body font-semibold leading-none" style={{ fontSize: 13 }}>
+          {top}
+        </span>
+        {bottom && (
+          <span className="font-body leading-snug mt-1" style={{ fontSize: 11, opacity: selected ? 0.9 : 0.75 }}>
+            {bottom}
+          </span>
+        )}
+      </div>
+    </button>
+  )
+}
+
+function HorizontalSliderField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  step: number
+  onChange: (v: number) => void
+}) {
+  return (
+    <div className="bg-wp-bg rounded-xl border border-wp-contour/50 p-4">
+      <div className="flex items-end justify-between gap-3">
+        <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.04em' }}>
+          {label}
+        </p>
+        <span className="font-mono font-bold text-wp-black" style={{ fontSize: 22, lineHeight: 1 }}>
+          {value}
+        </span>
+      </div>
+      <div className="mt-4">
+        <Slider
+          min={min}
+          max={max}
+          step={step}
+          value={[value]}
+          onValueChange={([v]) => onChange(v)}
+        />
+      </div>
+    </div>
+  )
+}
+
+function WarfightingStep({
   data,
   onChange,
 }: {
@@ -318,10 +356,8 @@ function ImportantDatesStep({
   onChange: (d: Step2Data) => void
 }) {
   const [touched, setTouched] = useState<Record<string, boolean>>({})
-
   const errors = {
-    dor: touched.dor && !data.dor ? 'Required' : '',
-    adbd: touched.adbd && !data.adbd ? 'Required' : '',
+    mcmapBelt: touched.mcmapBelt && !data.mcmapBelt ? 'Select a belt' : '',
   }
 
   function blur(field: string) {
@@ -330,78 +366,183 @@ function ImportantDatesStep({
 
   return (
     <div className="space-y-5">
-      <div className="bg-wp-bg rounded-xl p-4 border border-wp-contour/50">
-        <p className="font-body text-wp-tan-dark" style={{ fontSize: 13, lineHeight: 1.55 }}>
-          These dates are used to calculate your Time in Grade and Time in Service.
-        </p>
-      </div>
+      <HorizontalSliderField
+        label="Number of destroys achieved"
+        value={data.destroys}
+        min={1}
+        max={50}
+        step={1}
+        onChange={v => onChange({ ...data, destroys: v })}
+      />
 
       <div>
-        <label className={labelClass} style={labelStyle}>Date of Rank</label>
-        <DateSelectInput
-          value={data.dor}
-          onChange={dor => onChange({ ...data, dor })}
-          onBlur={() => blur('dor')}
-        />
-        {errors.dor && <p className={errorClass} style={errorStyle}>{errors.dor}</p>}
-      </div>
-
-      <div>
-        <label className={labelClass} style={labelStyle}>Active Duty Base Date (ADBD)</label>
-        <DateSelectInput
-          value={data.adbd}
-          onChange={adbd => onChange({ ...data, adbd })}
-          onBlur={() => blur('adbd')}
-        />
-        {errors.adbd && <p className={errorClass} style={errorStyle}>{errors.adbd}</p>}
+        <p className={labelClass} style={labelStyle}>MCMAP Belt</p>
+        <div className="grid grid-cols-2 gap-2">
+          {MCMAP_OPTIONS.map(opt => (
+            <SelectTile
+              key={opt.code}
+              top={opt.code}
+              bottom={opt.label}
+              selected={data.mcmapBelt === opt.code}
+              onClick={() => {
+                onChange({ ...data, mcmapBelt: opt.code })
+                blur('mcmapBelt')
+              }}
+            />
+          ))}
+        </div>
+        {errors.mcmapBelt && <p className={errorClass} style={errorStyle}>{errors.mcmapBelt}</p>}
       </div>
     </div>
   )
 }
 
-function ProConStep({
+function MentalAgilityStep({
   data,
   onChange,
 }: {
   data: Step3Data
   onChange: (d: Step3Data) => void
 }) {
-  const proVal = parseFloat(data.avgProMark) || 0
-  const conVal = parseFloat(data.avgConMark) || 0
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const errors = {
+    degree: touched.degree && !data.degree ? 'Select a degree' : '',
+  }
+
+  function blur(field: string) {
+    setTouched(t => ({ ...t, [field]: true }))
+  }
+
+  const cqSelected = new Set(data.mosCqs)
+
+  return (
+    <div className="space-y-5">
+      <HorizontalSliderField
+        label="MarineNet courses"
+        value={data.marineNetCourses}
+        min={1}
+        max={40}
+        step={1}
+        onChange={v => onChange({ ...data, marineNetCourses: v })}
+      />
+
+      <div>
+        <p className={labelClass} style={labelStyle}>Degree</p>
+        <div className="grid grid-cols-3 gap-2">
+          {DEGREE_OPTIONS.map(opt => (
+            <SelectTile
+              key={opt}
+              top={opt}
+              selected={data.degree === opt}
+              onClick={() => {
+                onChange({ ...data, degree: opt })
+                blur('degree')
+              }}
+            />
+          ))}
+        </div>
+        {errors.degree && <p className={errorClass} style={errorStyle}>{errors.degree}</p>}
+      </div>
+
+      <HorizontalSliderField
+        label="Off-duty education courses"
+        value={data.offDutyEducationCourses}
+        min={1}
+        max={40}
+        step={1}
+        onChange={v => onChange({ ...data, offDutyEducationCourses: v })}
+      />
+
+      <div>
+        <p className={labelClass} style={labelStyle}>MOS CQs</p>
+        <div className="grid grid-cols-2 gap-2">
+          {MOS_CQ_OPTIONS.map(opt => {
+            const selected = cqSelected.has(opt)
+            return (
+              <SelectTile
+                key={opt}
+                top={opt}
+                selected={selected}
+                onClick={() => {
+                  if (opt === 'None') {
+                    onChange({ ...data, mosCqs: ['None'] })
+                    return
+                  }
+                  const next = new Set(cqSelected)
+                  next.delete('None')
+                  if (next.has(opt)) next.delete(opt)
+                  else next.add(opt)
+                  onChange({ ...data, mosCqs: next.size ? Array.from(next) : ['None'] })
+                }}
+              />
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CommandInputStep({
+  data,
+  onChange,
+}: {
+  data: Step5Data
+  onChange: (d: Step5Data) => void
+}) {
+  const mosMissionVal = parseFloat(data.mosMission) || 1
+  const leadershipVal = parseFloat(data.leadership) || 1
+  const characterVal = parseFloat(data.character) || 1
 
   return (
     <div className="flex flex-col">
-      <div className="bg-wp-bg rounded-xl p-4 border border-wp-contour/50 mb-6">
-        <p className="font-body text-wp-tan-dark" style={{ fontSize: 13, lineHeight: 1.55 }}>
-          Pro and Con marks are scored 0.0 to 5.0 and are recorded on your FITREP/Counseling sheet. They directly contribute to your composite score.
-        </p>
-      </div>
+      <p
+        className="font-body text-center mb-6"
+        style={{ fontSize: 13, color: '#A08060' }}
+      >
+        Command Input is scored 1.0 to 5.0. Drag sliders up to set your values.
+      </p>
       <div className="flex justify-around gap-4 px-2">
         <VerticalSlider
-          label="Pro Mark"
-          value={proVal}
-          min={0}
+          label="MOS / Mission"
+          value={mosMissionVal}
+          min={1}
           max={5}
           step={0.1}
-          ticks={PROCON_TICKS}
+          ticks={COMMAND_TICKS}
           getClassification={getProConClass}
           displayDecimals={1}
-          onChange={v => onChange({ ...data, avgProMark: v.toFixed(1) })}
+          onChange={v => onChange({ ...data, mosMission: v.toFixed(1) })}
         />
         <div
           className="w-px self-stretch"
           style={{ background: '#D2C4A8', marginTop: 28, marginBottom: 0 }}
         />
         <VerticalSlider
-          label="Con Mark"
-          value={conVal}
-          min={0}
+          label="Leadership"
+          value={leadershipVal}
+          min={1}
           max={5}
           step={0.1}
-          ticks={PROCON_TICKS}
+          ticks={COMMAND_TICKS}
           getClassification={getProConClass}
           displayDecimals={1}
-          onChange={v => onChange({ ...data, avgConMark: v.toFixed(1) })}
+          onChange={v => onChange({ ...data, leadership: v.toFixed(1) })}
+        />
+        <div
+          className="w-px self-stretch"
+          style={{ background: '#D2C4A8', marginTop: 28, marginBottom: 0 }}
+        />
+        <VerticalSlider
+          label="Character"
+          value={characterVal}
+          min={1}
+          max={5}
+          step={0.1}
+          ticks={COMMAND_TICKS}
+          getClassification={getProConClass}
+          displayDecimals={1}
+          onChange={v => onChange({ ...data, character: v.toFixed(1) })}
         />
       </div>
     </div>
@@ -422,15 +563,8 @@ function getProConClass(score: number): { label: string; color: string } {
   return { label: 'Below Avg', color: '#CC3333' }
 }
 
-function getRifleClass(score: number): { label: string; color: string } {
-  if (score >= 220) return { label: 'Expert', color: '#2D8A4E' }
-  if (score >= 210) return { label: 'Sharpshooter', color: '#D4940A' }
-  return { label: 'Marksman', color: '#A08060' }
-}
-
 const SCORE_TICKS = [300, 225, 150, 75, 0]
-const PROCON_TICKS = [5.0, 3.75, 2.5, 1.25, 0.0]
-const RIFLE_TICKS = [250, 235, 220, 205, 190]
+const COMMAND_TICKS = [5.0, 4.0, 3.0, 2.0, 1.0]
 
 function VerticalSlider({
   label,
@@ -468,7 +602,7 @@ function VerticalSlider({
 
   function handleInputBlur() {
     const parsed = parseFloat(inputVal)
-    if (!isNaN(parsed)) {
+    if (!Number.isNaN(parsed)) {
       const clamped = Math.min(max, Math.max(min, parsed))
       const rounded = Math.round(clamped / step) * step
       onChange(rounded)
@@ -602,82 +736,27 @@ function FitnessStep({
   )
 }
 
-const BADGE_OPTIONS = ['Expert', 'Sharpshooter', 'Marksman']
-
-function RifleStep({
-  data,
-  onChange,
-}: {
-  data: Step5Data
-  onChange: (d: Step5Data) => void
-}) {
-  const [touched, setTouched] = useState<Record<string, boolean>>({})
-
-  const rifleVal = parseInt(data.rifleScore, 10) || 190
-
-  const errors = {
-    rifleBadge: touched.rifleBadge && !data.rifleBadge ? 'Select a qualification level' : '',
-  }
-
-  function blur(field: string) {
-    setTouched(t => ({ ...t, [field]: true }))
-  }
-
-  return (
-    <div className="flex flex-col">
-      <div>
-        <label className={`${labelClass} text-center`} style={labelStyle}>Qualification Badge</label>
-        <div className="flex gap-2 mb-6" onBlur={() => blur('rifleBadge')}>
-          {BADGE_OPTIONS.map(badge => (
-            <button
-              key={badge}
-              type="button"
-              onClick={() => onChange({ ...data, rifleBadge: badge })}
-              className="flex-1 rounded-lg border-[1.5px] font-body font-semibold cursor-pointer transition-all duration-150"
-              style={{
-                height: 44,
-                fontSize: 13,
-                borderColor: data.rifleBadge === badge ? '#FF5522' : '#D2C4A8',
-                background: data.rifleBadge === badge ? '#FF5522' : '#ebe1d1',
-                color: data.rifleBadge === badge ? '#FFFFFF' : '#1A1A1A',
-              }}
-            >
-              {badge}
-            </button>
-          ))}
-        </div>
-        {errors.rifleBadge && <p className={`${errorClass} text-center`} style={errorStyle}>{errors.rifleBadge}</p>}
-      </div>
-
-      <div className="flex justify-center">
-        <VerticalSlider
-          label="Rifle Score"
-          value={rifleVal}
-          min={190}
-          max={250}
-          step={1}
-          ticks={RIFLE_TICKS}
-          getClassification={getRifleClass}
-          displayDecimals={0}
-          onChange={v => onChange({ ...data, rifleScore: String(v) })}
-          flex={false}
-        />
-      </div>
-    </div>
-  )
-}
-
 export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlowProps) {
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
   const [animating, setAnimating] = useState(false)
   const [showCheck, setShowCheck] = useState(false)
 
-  const [step1, setStep1] = useState<Step1Data>({ fullName: '', mosCode: '', rank: '' })
-  const [step2, setStep2] = useState<Step2Data>({ dor: '', adbd: '' })
-  const [step3, setStep3] = useState<Step3Data>({ avgProMark: '0.0', avgConMark: '0.0' })
+  const [step1, setStep1] = useState<Step1Data>({
+    fullName: '',
+    mosCode: '',
+    rank: '',
+    dor: '',
+  })
+  const [step2, setStep2] = useState<Step2Data>({ destroys: 1, mcmapBelt: '' })
+  const [step3, setStep3] = useState<Step3Data>({
+    marineNetCourses: 1,
+    degree: '',
+    offDutyEducationCourses: 1,
+    mosCqs: ['None'],
+  })
   const [step4, setStep4] = useState<Step4Data>({ pftScore: '0', cftScore: '0' })
-  const [step5, setStep5] = useState<Step5Data>({ rifleScore: '190', rifleBadge: '' })
+  const [step5, setStep5] = useState<Step5Data>({ mosMission: '3.0', leadership: '3.0', character: '3.0' })
 
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -686,25 +765,37 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       return (
         step1.fullName.trim().length > 0 &&
         /^\d{4}$/.test(step1.mosCode) &&
-        !!step1.rank
+        !!step1.rank &&
+        !!step1.dor
       )
     }
     if (step === 2) {
-      return !!step2.dor && !!step2.adbd
+      return step2.destroys >= 1 && step2.destroys <= 50 && !!step2.mcmapBelt
     }
     if (step === 3) {
-      const pro = parseFloat(step3.avgProMark)
-      const con = parseFloat(step3.avgConMark)
-      return !isNaN(pro) && pro >= 0 && pro <= 5 && !isNaN(con) && con >= 0 && con <= 5
+      return (
+        step3.marineNetCourses >= 1 &&
+        step3.marineNetCourses <= 40 &&
+        !!step3.degree &&
+        step3.offDutyEducationCourses >= 1 &&
+        step3.offDutyEducationCourses <= 40 &&
+        step3.mosCqs.length > 0
+      )
     }
     if (step === 4) {
       const pft = parseInt(step4.pftScore, 10)
       const cft = parseInt(step4.cftScore, 10)
-      return !isNaN(pft) && pft >= 0 && pft <= 300 && !isNaN(cft) && cft >= 0 && cft <= 300
+      return !Number.isNaN(pft) && pft >= 0 && pft <= 300 && !Number.isNaN(cft) && cft >= 0 && cft <= 300
     }
     if (step === 5) {
-      const rifle = parseInt(step5.rifleScore, 10)
-      return !isNaN(rifle) && rifle >= 190 && rifle <= 250 && !!step5.rifleBadge
+      const mosMission = parseFloat(step5.mosMission)
+      const leadership = parseFloat(step5.leadership)
+      const character = parseFloat(step5.character)
+      return (
+        !Number.isNaN(mosMission) && mosMission >= 1 && mosMission <= 5 &&
+        !Number.isNaN(leadership) && leadership >= 1 && leadership <= 5 &&
+        !Number.isNaN(character) && character >= 1 && character <= 5
+      )
     }
     return false
   }
@@ -730,19 +821,31 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
         const nameParts = step1.fullName.trim().split(/\s+/)
         const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : nameParts[0]
         const firstName = nameParts.length > 1 ? nameParts.slice(0, -1).join(' ') : ''
+        const mosMission = parseFloat(step5.mosMission)
+        const leadership = parseFloat(step5.leadership)
+        const character = parseFloat(step5.character)
+        const safeMosMission = !Number.isNaN(mosMission) ? mosMission : 3.0
+        const safeLeadership = !Number.isNaN(leadership) ? leadership : 3.0
+        const safeCharacter = !Number.isNaN(character) ? character : 3.0
         onComplete({
           firstName,
           lastName,
           mosCode: step1.mosCode,
           rank: step1.rank as RankCode,
-          dor: step2.dor,
-          adbd: step2.adbd,
-          avgProMark: parseFloat(step3.avgProMark),
-          avgConMark: parseFloat(step3.avgConMark),
+          dor: step1.dor,
+          destroysAchieved: step2.destroys,
+          mcmapBelt: step2.mcmapBelt,
+          marineNetCourses: step3.marineNetCourses,
+          degree: step3.degree,
+          offDutyEducationCourses: step3.offDutyEducationCourses,
+          mosCqs: step3.mosCqs,
+          commandInputMosMission: safeMosMission,
+          commandInputLeadership: safeLeadership,
+          commandInputCharacter: safeCharacter,
           pftScore: parseInt(step4.pftScore, 10),
           cftScore: parseInt(step4.cftScore, 10),
-          rifleScore: parseInt(step5.rifleScore, 10),
-          rifleBadge: step5.rifleBadge,
+          rifleScore: 335,
+          rifleBadge: 'Expert',
         })
       }, 600)
     }
@@ -759,10 +862,10 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
 
   const stepTitles = [
     'Your Info',
-    'Important Dates',
-    'Pro/Con Marks',
-    'Fitness Scores',
-    'Rifle Qual',
+    'Warfighting',
+    'Mental Agility',
+    'Physical Toughness',
+    'Command Input',
   ]
 
   const slideStyle: React.CSSProperties = animating
@@ -778,9 +881,9 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       }
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center bg-black">
+    <div className="absolute inset-0 z-[80] bg-black">
       <div
-        className="relative w-full max-w-[428px] h-full flex flex-col bg-wp-bg"
+        className="relative w-full h-full flex flex-col bg-wp-bg"
       >
         <div
           className="absolute inset-0 z-0 pointer-events-none"
@@ -798,6 +901,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
             Step {step} of {TOTAL_STEPS}
           </span>
           <button
+            type="button"
             onClick={onDismiss}
             className="font-body text-wp-tan-dark bg-transparent border-none cursor-pointer px-0"
             style={{ fontSize: 14 }}
@@ -821,10 +925,10 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       <div className="flex-1 overflow-y-auto px-5 pt-6 pb-8">
         <div ref={contentRef} style={slideStyle}>
           {step === 1 && <Step1 data={step1} onChange={setStep1} />}
-          {step === 2 && <ImportantDatesStep data={step2} onChange={setStep2} />}
-          {step === 3 && <ProConStep data={step3} onChange={setStep3} />}
+          {step === 2 && <WarfightingStep data={step2} onChange={setStep2} />}
+          {step === 3 && <MentalAgilityStep data={step3} onChange={setStep3} />}
           {step === 4 && <FitnessStep data={step4} onChange={setStep4} />}
-          {step === 5 && <RifleStep data={step5} onChange={setStep5} />}
+          {step === 5 && <CommandInputStep data={step5} onChange={setStep5} />}
         </div>
       </div>
 
@@ -832,6 +936,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
         <div className="flex items-center gap-3">
           {step > 1 && (
             <button
+              type="button"
               onClick={goBack}
               className="flex items-center gap-1.5 border-[1.5px] border-wp-contour text-wp-black font-body font-semibold rounded-xl cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light shrink-0"
               style={{ height: 52, paddingLeft: 16, paddingRight: 20, fontSize: 14, background: '#ebe1d1' }}
@@ -842,13 +947,14 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
           )}
 
           <button
+            type="button"
             onClick={goNext}
             disabled={!canAdvance()}
             className="flex-1 flex items-center justify-center gap-2 bg-wp-accent text-white font-body font-semibold rounded-xl border-none cursor-pointer transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ height: 52, fontSize: 15 }}
           >
             {showCheck ? (
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true" focusable="false">
                 <circle cx="11" cy="11" r="10" stroke="white" strokeWidth="1.5" />
                 <path
                   d="M6.5 11L9.5 14L15.5 8"

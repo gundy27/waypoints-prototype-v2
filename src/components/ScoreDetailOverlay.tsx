@@ -22,7 +22,7 @@ function CompositeChart({ history, cuttingScore }: { history: { month: string; s
   return (
     <div className="bg-wp-surface rounded-xl p-4 pt-5" style={cardShadow}>
       <p className="font-body font-medium text-wp-tan-dark uppercase mb-4" style={{ fontSize: 11, letterSpacing: '0.02em' }}>
-        Composite Score Over Time
+        JEPES Score Over Time
       </p>
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={history} margin={{ top: 8, right: 8, left: -12, bottom: 4 }}>
@@ -54,8 +54,11 @@ function CompositeChart({ history, cuttingScore }: { history: { month: string; s
             strokeDasharray="6 4"
             strokeWidth={1.5}
             label={{
-              value: `Cut: ${cuttingScore}`,
-              position: 'right',
+              value: 'Cut Line',
+              position: 'insideRight',
+              textAnchor: 'end',
+              offset: 10,
+              dy: -6,
               fill: '#CC3333',
               fontSize: 11,
               fontFamily: 'Inter',
@@ -118,9 +121,9 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
   const gap = profile.cuttingScore - profile.compositeScore
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-start justify-center bg-black">
+    <div className="absolute inset-0 z-[90] bg-black">
       <div
-        className="relative h-full w-full max-w-[428px] flex flex-col overflow-hidden bg-wp-bg"
+        className="relative h-full w-full flex flex-col overflow-hidden bg-wp-bg"
       >
         <div
           className="absolute inset-0 z-0 pointer-events-none"
@@ -135,6 +138,7 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
 
         <header className="shrink-0 relative z-10 bg-wp-bg/90 backdrop-blur-sm px-4 flex items-center border-b border-wp-tan-light/50" style={{ height: 56 }}>
           <button
+            type="button"
             onClick={onClose}
             className="flex items-center gap-1 bg-transparent border-none cursor-pointer p-0 -ml-1"
           >
@@ -146,7 +150,7 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
         <main className="flex-1 overflow-y-auto relative z-10 px-4 pt-5 pb-8">
           <div className="flex items-baseline justify-between mb-1">
             <span className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.02em' }}>
-              Composite Score
+              JEPES Score
             </span>
             <span className="font-body font-semibold text-wp-accent" style={{ fontSize: 14 }}>
               Top {100 - profile.percentile}%

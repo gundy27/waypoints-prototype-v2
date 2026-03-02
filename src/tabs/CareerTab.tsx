@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { TrendingUp, Target, BookOpen, FileText, Dumbbell, Crosshair, Award, ChevronRight } from 'lucide-react'
 import type { UserProfile, ScoreBreakdown, Tip } from '../data/mockData'
 import { tips } from '../data/mockData'
-import PftModal from '../components/PftModal'
+import { RankInsignia, getNextRank, isRankCode } from '../components/RankInsignia'
 
 type TipStatus = 'Not Started' | 'Started' | 'Scheduled' | 'Completed'
 
@@ -19,7 +19,7 @@ interface CareerTabProps {
   profile: UserProfile
   breakdown: ScoreBreakdown[]
   compositeHistory: { month: string; score: number }[]
-  onLogPft: (pullUps: number, crunches: number, runMin: number, runSec: number) => void
+  onOpenPftModal: () => void
   onOpenScoreDetail: () => void
 }
 
@@ -29,13 +29,14 @@ function ScoreCard({ profile, onOpen }: { profile: UserProfile; onOpen: () => vo
 
   return (
     <button
+      type="button"
       onClick={onOpen}
       className="w-full text-left bg-wp-surface rounded-xl p-5 border-none cursor-pointer transition-shadow duration-150 hover:shadow-md"
       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
     >
       <div className="flex items-start justify-between">
         <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.02em' }}>
-          Your Composite Score
+          Your JEPES Score
         </p>
         <ChevronRight size={18} className="text-wp-tan-dark mt-0.5" />
       </div>
@@ -99,6 +100,7 @@ function TipCard({ tip, status, onCycleStatus }: { tip: Tip; status: TipStatus; 
               {tip.title}
             </h3>
             <button
+              type="button"
               onClick={onCycleStatus}
               className="shrink-0 rounded-full font-body font-semibold cursor-pointer border transition-all duration-150 active:scale-95"
               style={{
@@ -126,11 +128,12 @@ function TipCard({ tip, status, onCycleStatus }: { tip: Tip; status: TipStatus; 
   )
 }
 
-export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: CareerTabProps) {
-  const [showPftModal, setShowPftModal] = useState(false)
+export default function CareerTab({ profile, onOpenPftModal, onOpenScoreDetail }: CareerTabProps) {
   const [tipStatuses, setTipStatuses] = useState<Record<number, TipStatus>>(
     () => Object.fromEntries(tips.map(t => [t.id, 'Not Started' as TipStatus]))
   )
+  const rankCandidate = profile.name.split(/\s+/)[0] ?? ''
+  const nextRank = isRankCode(rankCandidate) ? getNextRank(rankCandidate) : null
 
   function cycleTipStatus(id: number) {
     setTipStatuses(prev => {
@@ -143,11 +146,29 @@ export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: Care
 
   return (
     <div>
+      {nextRank && (
+        <div className="w-full mb-4 flex flex-col items-center text-center">
+          <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.04em' }}>
+            Journey to
+          </p>
+          <div className="mt-3 flex items-center justify-center gap-3">
+            <RankInsignia rank={nextRank} color="#1A1A1A" size={44} />
+            <div className="font-heading font-bold text-wp-black" style={{ fontSize: 24, lineHeight: 1.1, letterSpacing: '-0.02em' }}>
+              {nextRank}
+            </div>
+          </div>
+          <div className="mt-1 font-body text-wp-tan-dark" style={{ fontSize: 13, lineHeight: 1.3 }}>
+            Your next promotion rank
+          </div>
+        </div>
+      )}
+
       <ScoreCard profile={profile} onOpen={onOpenScoreDetail} />
 
       <div className="grid grid-cols-3 gap-2.5 mt-4">
         <button
-          onClick={() => setShowPftModal(true)}
+          type="button"
+          onClick={onOpenPftModal}
           className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light"
           style={{ height: 56, fontSize: 12, background: '#ebe1d1' }}
         >
@@ -155,6 +176,7 @@ export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: Care
           Log PFT
         </button>
         <button
+          type="button"
           className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
           style={{ height: 56, fontSize: 12, background: '#ebe1d1' }}
         >
@@ -162,6 +184,7 @@ export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: Care
           Log Rifle
         </button>
         <button
+          type="button"
           className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
           style={{ height: 56, fontSize: 12, background: '#ebe1d1' }}
         >
@@ -172,7 +195,7 @@ export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: Care
 
       <div className="mt-5">
         <h2 className="font-heading font-bold text-wp-black mb-3" style={{ fontSize: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-          Action Plan
+          Waypoints
         </h2>
         <div className="space-y-2.5">
           {tips.map(tip => (
@@ -185,13 +208,6 @@ export default function CareerTab({ profile, onLogPft, onOpenScoreDetail }: Care
           ))}
         </div>
       </div>
-
-      {showPftModal && (
-        <PftModal
-          onClose={() => setShowPftModal(false)}
-          onSubmit={onLogPft}
-        />
-      )}
 
     </div>
   )

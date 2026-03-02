@@ -24,13 +24,13 @@ function getCftClass(score: number): string {
   return 'Below Standards'
 }
 
-function calcComposite(pft: number, cft: number, rifle: number, proMark: number, conMark: number): number {
+function calcComposite(pft: number, cft: number, rifle: number, commandInputAvg: number): number {
   const pftCft = Math.min(pft + cft, 600)
   const rifleScore = Math.min(rifle, 350)
   const pme = 100
   const tis = 221
-  const proCon = Math.round((proMark + conMark) / 2 * 50)
-  return pftCft + rifleScore + pme + tis + proCon
+  const commandInput = Math.round(commandInputAvg * 50)
+  return pftCft + rifleScore + pme + tis + commandInput
 }
 
 export interface OnboardingData {
@@ -39,9 +39,15 @@ export interface OnboardingData {
   mosCode: string
   rank: string
   dor: string
-  adbd: string
-  avgProMark: number
-  avgConMark: number
+  destroysAchieved: number
+  mcmapBelt: string
+  marineNetCourses: number
+  degree: string
+  offDutyEducationCourses: number
+  mosCqs: string[]
+  commandInputMosMission: number
+  commandInputLeadership: number
+  commandInputCharacter: number
   pftScore: number
   cftScore: number
   rifleScore: number
@@ -110,10 +116,10 @@ export function useAppState() {
     sessionStorage.removeItem(NOTIFICATION_PROMPT_KEY)
     setNotificationPromptShown(false)
 
-    const composite = calcComposite(data.pftScore, data.cftScore, data.rifleScore, data.avgProMark, data.avgConMark)
+    const commandInputAvg = (data.commandInputMosMission + data.commandInputLeadership + data.commandInputCharacter) / 3
+    const commandInputPoints = Math.round(commandInputAvg * 50)
+    const composite = calcComposite(data.pftScore, data.cftScore, data.rifleScore, commandInputAvg)
     const pftCft = Math.min(data.pftScore + data.cftScore, 600)
-    const proConAvg = (data.avgProMark + data.avgConMark) / 2
-    const proCon = Math.round(proConAvg * 50)
 
     setProfile({
       name: `${data.rank} ${data.lastName}`,
@@ -124,7 +130,6 @@ export function useAppState() {
       tis: '2 years 4 months',
       tig: '1 year 1 month',
       dor: data.dor,
-      adbd: data.adbd,
       compositeScore: composite,
       cuttingScore: 1510,
       pft: data.pftScore,
@@ -134,9 +139,10 @@ export function useAppState() {
       rifle: data.rifleScore,
       rifleClass: data.rifleBadge,
       pmeCompleted: true,
-      proCon: `${data.avgProMark.toFixed(1)} / ${data.avgConMark.toFixed(1)}`,
-      avgProMark: data.avgProMark,
-      avgConMark: data.avgConMark,
+      commandInputMosMission: data.commandInputMosMission,
+      commandInputLeadership: data.commandInputLeadership,
+      commandInputCharacter: data.commandInputCharacter,
+      commandInputAvg: commandInputAvg,
       percentile: Math.min(99, Math.max(1, Math.round((composite / 1800) * 100))),
       scoreTrend: 0,
     })
@@ -146,7 +152,7 @@ export function useAppState() {
       { label: 'Rifle Qualification', value: Math.min(data.rifleScore, 350), max: 350 },
       { label: 'PME', value: 100, max: 150 },
       { label: 'Time in Service', value: 221, max: 400 },
-      { label: 'Pro/Con Marks', value: proCon, max: 250 },
+      { label: 'Command Input', value: commandInputPoints, max: 250 },
     ])
 
     setHistory([{ month: 'Current', score: data.pftScore }])

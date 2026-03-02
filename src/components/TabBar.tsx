@@ -1,10 +1,11 @@
-import { Crosshair, Activity, BookOpen, FileText } from 'lucide-react'
+import { Crosshair, Activity, BookOpen, FileText, User } from 'lucide-react'
 
 const tabs = [
   { id: 'career', label: 'Career', icon: Crosshair },
   { id: 'fitness', label: 'Fitness', icon: Activity },
   { id: 'pocketbook', label: 'Pocketbook', icon: BookOpen },
   { id: 'maradmins', label: 'MARADMINS', icon: FileText },
+  { id: 'account', label: 'Account', icon: User },
 ] as const
 
 export type TabId = (typeof tabs)[number]['id']
@@ -27,6 +28,7 @@ export default function TabBar({ activeTab, onTabChange }: TabBarProps) {
           return (
             <button
               key={tab.id}
+              type="button"
               onClick={() => onTabChange(tab.id)}
               className="flex-1 flex flex-col items-center justify-center relative transition-colors duration-150 bg-transparent border-none cursor-pointer"
               style={{ minHeight: 44 }}
