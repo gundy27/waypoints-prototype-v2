@@ -24,54 +24,109 @@ interface CareerTabProps {
 }
 
 function ScoreCard({ profile, onOpen }: { profile: UserProfile; onOpen: () => void }) {
-  const progress = Math.min(100, (profile.compositeScore / profile.cuttingScore) * 100)
+  const progress = Math.min(1, profile.compositeScore / profile.cuttingScore)
   const gap = profile.cuttingScore - profile.compositeScore
 
+  const size = 160
+  const strokeWidth = 10
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="w-full text-left bg-wp-surface rounded-xl p-5 border-none cursor-pointer transition-shadow duration-150 hover:shadow-md"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
+      className="w-full text-left bg-wp-surface rounded-xl border-none cursor-pointer transition-shadow duration-150 hover:shadow-md"
+      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)', padding: '20px 20px 16px' }}
     >
-      <div className="flex items-start justify-between">
-        <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 12, letterSpacing: '0.02em' }}>
-          Your JEPES Score
+      <div className="flex items-center justify-between mb-4">
+        <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 11, letterSpacing: '0.08em' }}>
+          Target Lock
         </p>
-        <ChevronRight size={18} className="text-wp-tan-dark mt-0.5" />
-      </div>
-      <div className="mt-2 font-mono font-bold text-wp-black" style={{ fontSize: 36, lineHeight: 1, letterSpacing: '-0.02em' }}>
-        {profile.compositeScore}
-      </div>
-
-      <div className="mt-4 w-full h-2 bg-wp-tan-light rounded-full overflow-hidden">
-        <div
-          className="h-full bg-wp-accent rounded-full transition-all duration-400"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      <div className="mt-3 flex items-center justify-between">
-        <span className="font-mono font-semibold text-wp-tan-dark" style={{ fontSize: 20, lineHeight: 1.1, letterSpacing: '-0.01em' }}>
-          Cutting: {profile.cuttingScore}
-        </span>
-        <span className="font-body font-semibold text-wp-accent" style={{ fontSize: 14 }}>
-          Top {100 - profile.percentile}%
-        </span>
-      </div>
-
-      <div className="mt-4 flex items-center gap-1.5">
-        <TrendingUp size={16} className="text-wp-success" />
-        <span className="font-body text-wp-success" style={{ fontSize: 14 }}>
-          +{profile.scoreTrend} since last month
-        </span>
-      </div>
-
-      {gap > 0 && (
-        <div className="mt-2 font-body text-wp-tan-dark" style={{ fontSize: 13 }}>
-          {gap} points to promotion
+        <div className="flex items-center gap-2">
+          <span
+            className="font-body font-bold"
+            style={{ fontSize: 12, color: '#FF5522', background: 'rgba(255,85,34,0.10)', borderRadius: 4, padding: '2px 7px', letterSpacing: '0.02em' }}
+          >
+            Top {100 - profile.percentile}%
+          </span>
+          <ChevronRight size={16} className="text-wp-tan-dark" />
         </div>
-      )}
+      </div>
+
+      <div className="flex items-center gap-5">
+        <div className="relative shrink-0" style={{ width: size, height: size }}>
+          <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke="#E8D5B7"
+              strokeWidth={strokeWidth}
+            />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke="#D2C4A8"
+              strokeWidth={strokeWidth - 4}
+              strokeDasharray={`${circumference * (1 - progress) > 0 ? circumference - circumference * progress - 4 : 0} ${circumference}`}
+              strokeDashoffset={-circumference * progress - 2}
+              strokeLinecap="round"
+              opacity={0.5}
+            />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke="#FF5522"
+              strokeWidth={strokeWidth}
+              strokeDasharray={`${circumference * progress - 2} ${circumference}`}
+              strokeDashoffset={0}
+              strokeLinecap="round"
+              style={{ transition: 'stroke-dasharray 600ms ease-in-out' }}
+            />
+          </svg>
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center"
+            style={{ gap: 2 }}
+          >
+            <span className="font-mono font-bold text-wp-black" style={{ fontSize: 32, lineHeight: 1, letterSpacing: '-0.03em' }}>
+              {profile.compositeScore}
+            </span>
+            <span className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 9, letterSpacing: '0.1em' }}>
+              JEPES Score
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col justify-center gap-4 flex-1 min-w-0">
+          <div>
+            <div className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 10, letterSpacing: '0.06em', marginBottom: 2 }}>
+              Cutting Score
+            </div>
+            <div className="font-mono font-bold text-wp-black" style={{ fontSize: 22, lineHeight: 1, letterSpacing: '-0.02em' }}>
+              {profile.cuttingScore}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-1.5">
+              <TrendingUp size={13} style={{ color: '#2D8A4E', flexShrink: 0 }} />
+              <span className="font-body font-semibold" style={{ fontSize: 13, color: '#2D8A4E', lineHeight: 1.2 }}>
+                +{profile.scoreTrend} this month
+              </span>
+            </div>
+            {gap > 0 && (
+              <div className="font-body text-wp-tan-dark" style={{ fontSize: 12, lineHeight: 1.3 }}>
+                <span className="font-semibold text-wp-black">{gap} pts</span> to promotion
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </button>
   )
 }
