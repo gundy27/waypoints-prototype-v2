@@ -165,6 +165,8 @@ function BreakdownSection({ breakdown }: { breakdown: ScoreBreakdown[] }) {
 }
 
 export default function ScoreDetailOverlay({ profile, breakdown, compositeHistory, cutScoreProjection, onClose, activeTab, onTabChange }: ScoreDetailOverlayProps) {
+  const gap = profile.cuttingScore - profile.compositeScore
+
   function handleTabChange(tab: TabId) {
     onClose()
     onTabChange(tab)
@@ -213,6 +215,11 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
             <span className="font-mono font-semibold text-wp-tan-dark" style={{ fontSize: 16 }}>
               / {profile.cuttingScore}
             </span>
+            {gap > 0 && (
+              <span className="font-body text-wp-danger" style={{ fontSize: 13, fontWeight: 500 }}>
+                {gap} pts away
+              </span>
+            )}
           </div>
 
           <CompositeChart history={compositeHistory} cuttingScore={profile.cuttingScore} projection={cutScoreProjection} />

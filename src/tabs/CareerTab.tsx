@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Target, BookOpen, Dumbbell, Award, ChevronRight, Clock, CheckCircle2, Calendar, Shield, Brain, Star, Zap } from 'lucide-react'
+import { TrendingUp, Target, BookOpen, Dumbbell, Award, ChevronRight, Clock, CheckCircle2, Calendar, Shield, Brain, Star, Zap } from 'lucide-react'
 import type { UserProfile, ScoreBreakdown, ScoreCategory } from '../data/mockData'
 import { RankInsignia, getNextRank, isRankCode } from '../components/RankInsignia'
 import type { PromotionWindow } from '../data/promotionTimeline'
@@ -167,16 +167,6 @@ function ScoreCard({ profile, projection, onOpen }: { profile: UserProfile; proj
               </div>
               <div className="font-mono font-bold text-wp-black" style={{ fontSize: 20, lineHeight: 1, letterSpacing: '-0.02em' }}>
                 {projection.projectedLow}–{projection.projectedHigh}
-              </div>
-              <div className="flex items-center gap-1 mt-1.5">
-                {projection.trend === 'falling' ? (
-                  <TrendingDown size={12} style={{ color: '#2D8A4E', flexShrink: 0 }} />
-                ) : (
-                  <TrendingUp size={12} style={{ color: '#CC3333', flexShrink: 0 }} />
-                )}
-                <span className="font-body font-medium" style={{ fontSize: 11, color: projection.trend === 'falling' ? '#2D8A4E' : '#CC3333', lineHeight: 1.2 }}>
-                  {projection.trend === 'falling' ? '↓' : '↑'} ~{Math.abs(projection.quarterlyChange)} pts/qtr
-                </span>
               </div>
             </div>
           ) : (
