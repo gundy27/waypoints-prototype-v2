@@ -98,7 +98,7 @@ export interface Tip {
   id: number
   title: string
   description: string
-  icon: 'gap' | 'pme' | 'cutting'
+  icon: 'gap' | 'pme' | 'cutting' | 'fitness'
 }
 
 export const tips: Tip[] = [
@@ -118,10 +118,10 @@ export const tips: Tip[] = [
   },
   {
     id: 3,
-    title: 'Cutting Score Update',
+    title: 'Boost Your PFT Score',
     description:
-      'MARADMIN 045/25: Cutting score for 0311 dropped 20 points this quarter to 780.',
-    icon: 'cutting',
+      'Your next PFT window opens in 6 weeks. Adding two interval runs per week can cut 30–45 seconds off your 3-mile time and add up to 10 JEPES Physical Fitness points.',
+    icon: 'fitness',
   },
 ]
 

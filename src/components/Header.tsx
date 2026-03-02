@@ -1,9 +1,12 @@
+import type { ReactNode } from 'react'
+
 interface HeaderProps {
   title: string
   subtitle?: string
+  rightSlot?: ReactNode
 }
 
-export default function Header({ title, subtitle }: HeaderProps) {
+export default function Header({ title, subtitle, rightSlot }: HeaderProps) {
   return (
     <header
       className="sticky top-0 z-40 bg-wp-bg/90 backdrop-blur-sm px-4 flex items-center justify-between border-b border-wp-tan-light/50"
@@ -19,6 +22,11 @@ export default function Header({ title, subtitle }: HeaderProps) {
           </p>
         )}
       </div>
+      {rightSlot && (
+        <div className="flex items-center">
+          {rightSlot}
+        </div>
+      )}
     </header>
   )
 }

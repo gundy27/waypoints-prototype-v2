@@ -136,6 +136,7 @@ function TipCard({ tip, status, onCycleStatus }: { tip: Tip; status: TipStatus; 
     gap: Target,
     pme: BookOpen,
     cutting: FileText,
+    fitness: Dumbbell,
   }
   const Icon = iconMap[tip.icon]
   const style = STATUS_STYLES[status]

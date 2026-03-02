@@ -4,6 +4,8 @@ import TabBar from './components/TabBar'
 import OnboardingFlow from './components/OnboardingFlow'
 import ScoreDetailOverlay from './components/ScoreDetailOverlay'
 import NotificationPrompt from './components/NotificationPrompt'
+import NotificationBell from './components/NotificationBell'
+import type { AppNotification } from './components/NotificationBell'
 import PostOnboardingPlaceholder from './components/PostOnboardingPlaceholder'
 import PftModal from './components/PftModal'
 import type { TabId } from './components/TabBar'
@@ -21,6 +23,16 @@ const tabMeta: Record<TabId, { title: string; subtitle?: string }> = {
   account: { title: 'Account' },
 }
 
+const INITIAL_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 'maradmin-045-25',
+    title: 'Cutting Score Dropped',
+    description: 'MARADMIN 045/25: Cutting score for 0311 dropped 20 points this quarter to 780.',
+    read: false,
+    targetTab: 'maradmins',
+  },
+]
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('career')
   const [onboardingOpen, setOnboardingOpen] = useState(false)
@@ -28,6 +40,8 @@ export default function App() {
   const [showScoreDetail, setShowScoreDetail] = useState(false)
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false)
   const [showPftModal, setShowPftModal] = useState(false)
+  const [bellOpen, setBellOpen] = useState(false)
+  const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS)
   const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const postOnboardingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { profile, breakdown, compositeHist, bookmarks, notificationPromptShown, logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown } = useAppState()
@@ -47,6 +61,16 @@ export default function App() {
     }
     markNotificationShown()
     setShowNotificationPrompt(false)
+  }
+
+  function handleBellNotificationClick(notification: AppNotification) {
+    setNotifications(prev =>
+      prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
+    )
+    setBellOpen(false)
+    if (notification.targetTab) {
+      setActiveTab(notification.targetTab)
+    }
   }
 
   const careerSubtitle = `${profile.name} — ${profile.mos.split(' ')[0]}`
@@ -89,7 +113,19 @@ export default function App() {
           }}
         />
 
-        <Header title={meta.title} subtitle={meta.subtitle} />
+        <Header
+          title={meta.title}
+          subtitle={meta.subtitle}
+          rightSlot={
+            <NotificationBell
+              notifications={notifications}
+              isOpen={bellOpen}
+              onToggle={() => setBellOpen(prev => !prev)}
+              onClose={() => setBellOpen(false)}
+              onNotificationClick={handleBellNotificationClick}
+            />
+          }
+        />
 
         <main
           className="flex-1 overflow-y-auto relative z-10 px-4 pt-6 bg-transparent"
@@ -104,7 +140,7 @@ export default function App() {
               onOpenScoreDetail={() => setShowScoreDetail(true)}
             />
           )}
-{activeTab === 'pocketbook' && (
+          {activeTab === 'pocketbook' && (
             <PocketbookTab bookmarks={bookmarks} onToggleBookmark={toggleBookmark} />
           )}
           {activeTab === 'maradmins' && <MaradminsTab />}
