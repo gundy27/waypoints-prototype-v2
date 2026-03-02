@@ -83,26 +83,6 @@ function CompositeChart({ history, cuttingScore, projection }: { history: { mont
               fontWeight: 600,
             }}
           />
-          {/* Projected mid line */}
-          {projection && projection.projectedMid !== cuttingScore && (
-            <ReferenceLine
-              y={projection.projectedMid}
-              stroke="#CC3333"
-              strokeDasharray="3 6"
-              strokeWidth={1}
-              label={{
-                value: 'Projected',
-                position: 'insideLeft',
-                textAnchor: 'start',
-                offset: 10,
-                dy: -6,
-                fill: '#CC3333',
-                fontSize: 10,
-                fontFamily: 'Inter',
-                fontWeight: 500,
-              }}
-            />
-          )}
           <Line
             type="monotone"
             dataKey="score"
