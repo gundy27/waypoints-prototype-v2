@@ -1,8 +1,7 @@
-import { Crosshair, Activity, BookOpen, FileText, User } from 'lucide-react'
+import { Crosshair, BookOpen, FileText, User } from 'lucide-react'
 
 const tabs = [
   { id: 'career', label: 'Career', icon: Crosshair },
-  { id: 'fitness', label: 'Fitness', icon: Activity },
   { id: 'pocketbook', label: 'Pocketbook', icon: BookOpen },
   { id: 'maradmins', label: 'MARADMINS', icon: FileText },
   { id: 'account', label: 'Account', icon: User },

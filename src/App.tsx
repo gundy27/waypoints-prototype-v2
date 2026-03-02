@@ -10,14 +10,12 @@ import type { TabId } from './components/TabBar'
 import { useAppState } from './data/useAppState'
 import type { OnboardingData } from './data/useAppState'
 import CareerTab from './tabs/CareerTab'
-import FitnessTab from './tabs/FitnessTab'
 import PocketbookTab from './tabs/PocketbookTab'
 import MaradminsTab from './tabs/MaradminsTab'
 import AccountTab from './tabs/AccountTab'
 
 const tabMeta: Record<TabId, { title: string; subtitle?: string }> = {
   career: { title: 'Waypoints', subtitle: 'LCpl Martinez — 0311' },
-  fitness: { title: 'Fitness' },
   pocketbook: { title: 'Pocketbook' },
   maradmins: { title: 'MARADMINS' },
   account: { title: 'Account' },
@@ -32,7 +30,7 @@ export default function App() {
   const [showPftModal, setShowPftModal] = useState(false)
   const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const postOnboardingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { profile, breakdown, history, compositeHist, bookmarks, notificationPromptShown, logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown } = useAppState()
+  const { profile, breakdown, compositeHist, bookmarks, notificationPromptShown, logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown } = useAppState()
 
   function handleScoreDetailClose() {
     setShowScoreDetail(false)
@@ -106,10 +104,7 @@ export default function App() {
               onOpenScoreDetail={() => setShowScoreDetail(true)}
             />
           )}
-          {activeTab === 'fitness' && (
-            <FitnessTab profile={profile} history={history} onLogPft={logPft} />
-          )}
-          {activeTab === 'pocketbook' && (
+{activeTab === 'pocketbook' && (
             <PocketbookTab bookmarks={bookmarks} onToggleBookmark={toggleBookmark} />
           )}
           {activeTab === 'maradmins' && <MaradminsTab />}
