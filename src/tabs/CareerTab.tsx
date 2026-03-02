@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { TrendingUp, TrendingDown, Target, BookOpen, FileText, Dumbbell, Crosshair, Award, ChevronRight, Clock, CheckCircle2, Calendar } from 'lucide-react'
+import { TrendingUp, TrendingDown, Target, BookOpen, FileText, Dumbbell, Award, ChevronRight, Clock, CheckCircle2, Calendar, Shield, Brain, Star, Zap } from 'lucide-react'
 import type { UserProfile, ScoreBreakdown, Tip, ScoreCategory } from '../data/mockData'
 import { tips } from '../data/mockData'
 import { RankInsignia, getNextRank, isRankCode } from '../components/RankInsignia'
@@ -44,8 +44,6 @@ interface CareerTabProps {
   promotionWindow: PromotionWindow | null
   cutScoreProjection: CutScoreProjection | null
   rankedOpportunities: RankedOpportunity[]
-  currentSeason: 'pft' | 'cft'
-  onOpenPftModal: () => void
   onOpenScoreDetail: () => void
 }
 
@@ -345,8 +343,6 @@ export default function CareerTab({
   promotionWindow,
   cutScoreProjection,
   rankedOpportunities,
-  currentSeason,
-  onOpenPftModal,
   onOpenScoreDetail,
 }: CareerTabProps) {
   const [tipStatuses, setTipStatuses] = useState<Record<number, TipStatus>>(
@@ -390,33 +386,43 @@ export default function CareerTab({
       {/* Score Card */}
       <ScoreCard profile={profile} projection={cutScoreProjection} onOpen={onOpenScoreDetail} />
 
-      {/* Action Buttons — season-aware first button */}
-      <div className="grid grid-cols-3 gap-2.5 mt-4">
-        <button
-          type="button"
-          onClick={onOpenPftModal}
-          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light"
-          style={{ height: 56, fontSize: 12, background: '#ebe1d1' }}
+      {/* Score Category Tiles */}
+      <div className="flex flex-wrap justify-center gap-2.5 mt-4">
+        <div
+          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
+          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
+        >
+          <Shield size={20} />
+          Log Warfighting
+        </div>
+        <div
+          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
+          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
         >
           <Dumbbell size={20} />
-          {currentSeason === 'pft' ? 'Log PFT' : 'Log CFT'}
-        </button>
-        <button
-          type="button"
-          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
-          style={{ height: 56, fontSize: 12, background: '#ebe1d1' }}
+          Log Physical Toughness
+        </div>
+        <div
+          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
+          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
         >
-          <Crosshair size={20} />
-          Log Rifle
-        </button>
-        <button
-          type="button"
-          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg cursor-pointer transition-colors duration-150 hover:bg-wp-tan-light opacity-50"
-          style={{ height: 56, fontSize: 12, background: '#ebe1d1' }}
+          <Brain size={20} />
+          Log Mental Agility
+        </div>
+        <div
+          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
+          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
         >
-          <Award size={20} />
-          Log PME
-        </button>
+          <Star size={20} />
+          Log Command Input
+        </div>
+        <div
+          className="flex flex-col items-center justify-center gap-1.5 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg"
+          style={{ height: 56, fontSize: 12, background: '#ebe1d1', width: 'calc(33.333% - 7px)' }}
+        >
+          <Zap size={20} />
+          Log Bonus
+        </div>
       </div>
 
       {/* Available to You — ranked opportunities */}

@@ -46,7 +46,7 @@ export default function App() {
   const postOnboardingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const {
     profile, breakdown, compositeHist, bookmarks, notificationPromptShown,
-    promotionWindow, cutScoreProjection, rankedOpportunities, currentSeason,
+    promotionWindow, cutScoreProjection, rankedOpportunities,
     logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown,
   } = useAppState()
 
@@ -143,8 +143,6 @@ export default function App() {
               promotionWindow={promotionWindow}
               cutScoreProjection={cutScoreProjection}
               rankedOpportunities={rankedOpportunities}
-              currentSeason={currentSeason}
-              onOpenPftModal={() => setShowPftModal(true)}
               onOpenScoreDetail={() => setShowScoreDetail(true)}
             />
           )}
