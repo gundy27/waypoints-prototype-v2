@@ -1,4 +1,4 @@
-import { TrendingUp, Target, BookOpen, Dumbbell, Award, ChevronRight, Clock, CheckCircle2, Calendar, Shield, Brain, Star, Zap } from 'lucide-react'
+import { TrendingUp, Target, BookOpen, Dumbbell, Award, ChevronRight, CheckCircle2, Calendar, Shield, Brain, Star, Zap } from 'lucide-react'
 import type { UserProfile, ScoreBreakdown, ScoreCategory } from '../data/mockData'
 import { RankInsignia, getNextRank, isRankCode } from '../components/RankInsignia'
 import type { PromotionWindow } from '../data/promotionTimeline'
@@ -63,32 +63,104 @@ function PromotionWindowBanner({ window }: { window: PromotionWindow }) {
     )
   }
 
-  // Preparation phase
+  // Preparation phase — horizontal timeline widget
   const totalDays = window.rule.tigMonthsRequired * 30
   const elapsed = totalDays - window.daysUntilEligible
-  const progressPct = Math.max(0, Math.min(100, (elapsed / totalDays) * 100))
+  const progressPct = Math.max(2, Math.min(96, (elapsed / totalDays) * 100))
 
   return (
-    <div
-      className="bg-wp-surface rounded-xl p-3.5 border-l-[3px] mb-4"
-      style={{ borderLeftColor: '#D4940A', boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
-    >
-      <div className="flex items-center gap-3">
-        <div className="shrink-0">
-          <Clock size={18} style={{ color: '#D4940A' }} strokeWidth={1.75} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 10, letterSpacing: '0.06em', marginBottom: 2 }}>
-            Promotion Window
-          </p>
-          <p className="font-mono font-bold text-wp-black" style={{ fontSize: 18, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+    <div className="mb-4" style={{ paddingTop: 2, paddingBottom: 2 }}>
+      {/* Section label */}
+      <p className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 10, letterSpacing: '0.06em', marginBottom: 10 }}>
+        Promotion Window
+      </p>
+
+      {/* Timeline container — extra top padding to accommodate floating countdown */}
+      <div className="relative" style={{ paddingTop: 32 }}>
+
+        {/* Floating countdown above the progress marker */}
+        <div
+          className="absolute"
+          style={{
+            left: `${progressPct}%`,
+            top: 0,
+            transform: 'translateX(-50%)',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span className="font-mono font-bold text-wp-black" style={{ fontSize: 17, letterSpacing: '-0.02em', lineHeight: 1 }}>
             Opens in {formatCountdown(window.daysUntilEligible)}
-          </p>
-          <p className="font-body text-wp-tan-dark" style={{ fontSize: 11, lineHeight: 1.4, marginTop: 2 }}>
-            Earliest eligibility: {formatShortDate(window.eligibilityDate)}
-          </p>
-          <div className="mt-2.5 w-full h-1.5 bg-wp-tan-light rounded-full overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: `${progressPct}%`, background: '#D4940A', transition: 'width 600ms ease-in-out' }} />
+          </span>
+          {/* Connector tick */}
+          <div
+            className="mx-auto"
+            style={{ width: 1.5, height: 8, background: '#D4940A', opacity: 0.6, marginTop: 3 }}
+          />
+        </div>
+
+        {/* Track row */}
+        <div className="relative flex items-center" style={{ height: 20 }}>
+          {/* Background track */}
+          <div
+            className="absolute inset-y-0 flex items-center"
+            style={{ left: 0, right: 0 }}
+          >
+            <div className="w-full rounded-full" style={{ height: 6, background: '#E8D5B7' }} />
+          </div>
+
+          {/* Filled progress */}
+          <div
+            className="absolute inset-y-0 flex items-center"
+            style={{ left: 0, width: `${progressPct}%` }}
+          >
+            <div
+              className="w-full rounded-full"
+              style={{ height: 6, background: '#D4940A', transition: 'width 700ms ease-out' }}
+            />
+          </div>
+
+          {/* Left endpoint dot */}
+          <div
+            className="absolute rounded-full border-2"
+            style={{ width: 10, height: 10, left: 0, background: '#D4940A', borderColor: '#D4940A', transform: 'translateX(-50%)' }}
+          />
+
+          {/* Current position marker dot */}
+          <div
+            className="absolute rounded-full"
+            style={{
+              width: 14,
+              height: 14,
+              left: `${progressPct}%`,
+              transform: 'translateX(-50%)',
+              background: '#fff',
+              border: '2.5px solid #D4940A',
+              boxShadow: '0 0 0 3px rgba(212,148,10,0.15)',
+            }}
+          />
+
+          {/* Right endpoint dot */}
+          <div
+            className="absolute rounded-full border-2"
+            style={{ width: 10, height: 10, right: 0, background: '#E8D5B7', borderColor: '#C4A87A', transform: 'translateX(50%)' }}
+          />
+        </div>
+
+        {/* Labels below track */}
+        <div className="flex justify-between" style={{ marginTop: 8 }}>
+          <div style={{ textAlign: 'left' }}>
+            <p className="font-body text-wp-tan-dark" style={{ fontSize: 10, lineHeight: 1.3 }}>
+              Earliest Eligibility
+            </p>
+            <p className="font-body font-medium text-wp-tan-dark" style={{ fontSize: 11, lineHeight: 1.3 }}>
+              {formatShortDate(window.eligibilityDate)}
+            </p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p className="font-body text-wp-tan-dark" style={{ fontSize: 10, lineHeight: 1.3 }}>
+              Full Window
+            </p>
           </div>
         </div>
       </div>
