@@ -15,11 +15,19 @@ export interface UserProfile {
   cftClass: string
   rifle: number
   rifleClass: string
+  mcmapBelt: string
   pmeCompleted: boolean
   commandInputMosMission: number
   commandInputLeadership: number
   commandInputCharacter: number
   commandInputAvg: number
+  mosQualPoints: number
+  mciCourses: number
+  degree: string
+  inGradeCourses: number
+  inServicePoints: number
+  sdaAssignment: string
+  crbReferrals: number
   percentile: number
   scoreTrend: number
 }
@@ -33,21 +41,29 @@ export const defaultProfile: UserProfile = {
   tis: '2 years 4 months',
   tig: '1 year 1 month',
   dor: '2023-10-01',
-  compositeScore: 1432,
-  cuttingScore: 1510,
+  compositeScore: 718,
+  cuttingScore: 780,
   pft: 271,
   pftClass: '1st Class',
   cft: 285,
   cftClass: '1st Class',
   rifle: 335,
   rifleClass: 'Expert',
+  mcmapBelt: 'MMD',
   pmeCompleted: true,
-  commandInputMosMission: 4.4,
-  commandInputLeadership: 4.4,
-  commandInputCharacter: 4.4,
-  commandInputAvg: 4.4,
-  percentile: 72,
-  scoreTrend: 14,
+  commandInputMosMission: 3.8,
+  commandInputLeadership: 3.6,
+  commandInputCharacter: 3.7,
+  commandInputAvg: 3.7,
+  mosQualPoints: 70,
+  mciCourses: 24,
+  degree: 'None',
+  inGradeCourses: 2,
+  inServicePoints: 0,
+  sdaAssignment: 'None',
+  crbReferrals: 0,
+  percentile: 64,
+  scoreTrend: 12,
 }
 
 export interface ScoreBreakdown {
@@ -57,11 +73,11 @@ export interface ScoreBreakdown {
 }
 
 export const scoreBreakdown: ScoreBreakdown[] = [
-  { label: 'PFT/CFT', value: 556, max: 600 },
-  { label: 'Rifle Qualification', value: 335, max: 350 },
-  { label: 'PME', value: 100, max: 150 },
-  { label: 'Time in Service', value: 221, max: 400 },
-  { label: 'Command Input', value: 220, max: 250 },
+  { label: 'Warfighting', value: 188, max: 250 },
+  { label: 'Physical Toughness', value: 226, max: 250 },
+  { label: 'Mental Agility', value: 120, max: 250 },
+  { label: 'Command Input', value: 184, max: 250 },
+  { label: 'Bonus', value: 0, max: 100 },
 ]
 
 export const pftHistory = [
@@ -72,10 +88,10 @@ export const pftHistory = [
 ]
 
 export const compositeHistory = [
-  { month: 'Jun 24', score: 1350 },
-  { month: 'Sep 24', score: 1380 },
-  { month: 'Nov 24', score: 1405 },
-  { month: 'Jan 25', score: 1432 },
+  { month: 'Jun 24', score: 680 },
+  { month: 'Sep 24', score: 694 },
+  { month: 'Nov 24', score: 706 },
+  { month: 'Jan 25', score: 718 },
 ]
 
 export interface Tip {
@@ -90,21 +106,21 @@ export const tips: Tip[] = [
     id: 1,
     title: 'Close the Gap',
     description:
-      "You're 78 points below the cutting score. A 285+ PFT would move you to Top 20%.",
+      "You're 62 points below the cutting score. Max your MCIs on MarineNet — 40 CEUs gives you 50 JEPES points.",
     icon: 'gap',
   },
   {
     id: 2,
-    title: "Start Cpl's Course",
+    title: 'Earn MOS Qual Points',
     description:
-      'Completing PME adds points to your composite. Start the Corporals Course on MarineNet.',
+      'MOS qualification courses can give you up to 100 JEPES points in Mental Agility. Check the PMOS list for courses worth your time.',
     icon: 'pme',
   },
   {
     id: 3,
     title: 'Cutting Score Update',
     description:
-      'MARADMIN 045/25: Cutting score for 0311 dropped 25 points this quarter.',
+      'MARADMIN 045/25: Cutting score for 0311 dropped 20 points this quarter to 780.',
     icon: 'cutting',
   },
 ]
@@ -334,13 +350,13 @@ export const pocketbookCategories: PocketbookCategory[] = [
         id: 'p3',
         title: 'E-4 (Cpl) Requirements',
         content:
-          'JEPES score must meet or exceed the cutting score for MOS. Components include: rifle score, PFT/CFT, PME, Command Input, TIS, TIG. Cutting scores published quarterly via MARADMIN.',
+          'JEPES score (0-1000, up to 1100 with bonus) must meet or exceed the cutting score for MOS. Five categories: Warfighting (250), Physical Toughness (250), Mental Agility (250), Command Input (250), Bonus (100). Cutting scores published monthly via MARADMIN.',
       },
       {
         id: 'p4',
         title: 'E-5 (Sgt) Requirements',
         content:
-          'JEPES score must meet or exceed the cutting score for MOS. Must be a Corporal. Must complete required PME (Sergeants Course). Cutting scores published quarterly via MARADMIN.',
+          'JEPES score (0-1000, up to 1100 with bonus) must meet or exceed the cutting score for MOS. Must be a Corporal. Must complete required PME (Sergeants Course). Cutting scores published monthly via MARADMIN.',
       },
     ],
   },
@@ -369,9 +385,9 @@ export const maradmins: Maradmin[] = [
     tag: 'Promotions',
     affectsScore: true,
     fullText:
-      'R 151200Z FEB 25\nFM CMC WASHINGTON DC\nTO AL MARADMIN\nSUBJ/FY25 SECOND QUARTER ENLISTED JEPES SCORE CUTTING SCORES\n\n1. THE FOLLOWING CUTTING SCORES ARE EFFECTIVE 1 MARCH 2025 FOR PROMOTION TO CPL AND SGT.\n\n2. MOS 0311 RIFLEMAN:\n   A. TO CPL: 1510 (PREV 1535, CHANGE: -25)\n   B. TO SGT: 1725 (PREV 1740, CHANGE: -15)\n\n3. MARINES WHO MEET OR EXCEED THE APPLICABLE CUTTING SCORE ON THE EFFECTIVE DATE WILL BE PROMOTED IAW CURRENT POLICY.\n\n4. COMMANDING OFFICERS SHALL ENSURE ALL ELIGIBLE MARINES ARE COUNSELED ON THEIR JEPES SCORES AND AREAS FOR IMPROVEMENT.',
+      'R 151200Z FEB 25\nFM CMC WASHINGTON DC\nTO AL MARADMIN\nSUBJ/FY25 SECOND QUARTER ENLISTED JEPES SCORE CUTTING SCORES\n\n1. THE FOLLOWING CUTTING SCORES ARE EFFECTIVE 1 MARCH 2025 FOR PROMOTION TO CPL AND SGT.\n\n2. MOS 0311 RIFLEMAN:\n   A. TO CPL: 780 (PREV 800, CHANGE: -20)\n   B. TO SGT: 860 (PREV 870, CHANGE: -10)\n\n3. MARINES WHO MEET OR EXCEED THE APPLICABLE CUTTING SCORE ON THE EFFECTIVE DATE WILL BE PROMOTED IAW CURRENT POLICY.\n\n4. COMMANDING OFFICERS SHALL ENSURE ALL ELIGIBLE MARINES ARE COUNSELED ON THEIR JEPES SCORES AND AREAS FOR IMPROVEMENT.',
     whatItMeans:
-      'The cutting score for your MOS (0311) to make Corporal dropped 25 points to 1510. This means you need fewer points to promote. With your current JEPES of 1432, you are now 78 points away instead of 103. Focus on PFT improvement and starting your Corporals Course to close the remaining gap.',
+      'The cutting score for your MOS (0311) to make Corporal dropped 20 points to 780. This means you need fewer points to promote. With your current JEPES of 718, you are now 62 points away instead of 82. Focus on completing MCIs on MarineNet and earning MOS qualification points to close the remaining gap.',
   },
   {
     id: 2,

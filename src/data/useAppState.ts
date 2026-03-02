@@ -24,13 +24,107 @@ function getCftClass(score: number): string {
   return 'Below Standards'
 }
 
-function calcComposite(pft: number, cft: number, rifle: number, commandInputAvg: number): number {
-  const pftCft = Math.min(pft + cft, 600)
-  const rifleScore = Math.min(rifle, 350)
-  const pme = 100
-  const tis = 221
-  const commandInput = Math.round(commandInputAvg * 50)
-  return pftCft + rifleScore + pme + tis + commandInput
+function getMcmapPoints(belt: string): number {
+  const map: Record<string, number> = {
+    MMA: 0,
+    MMB: 30,
+    MMC: 60,
+    MMD: 105,
+    MME: 120,
+    MMF: 135,
+    'MMG+': 150,
+  }
+  return map[belt] ?? 0
+}
+
+function getRiflePoints(rifleScore: number): number {
+  if (rifleScore >= 305) return 100
+  if (rifleScore >= 280) return 75
+  if (rifleScore >= 250) return 50
+  if (rifleScore >= 190) return 25
+  return 0
+}
+
+function getFitnessPoints(score: number): number {
+  return Math.round((score / 300) * 125)
+}
+
+function getMciPoints(courses: number): number {
+  const capped = Math.min(courses, 40)
+  return Math.round(capped * 1.25)
+}
+
+function getDegreePoints(degree: string): number {
+  if (degree === 'Bachelors') return 20
+  if (degree === 'Associates') return 10
+  return 0
+}
+
+function getOffDutyPoints(inGradeCourses: number, inServicePoints: number): number {
+  const inGrade = Math.min(inGradeCourses, 4) * 5
+  return Math.min(inGrade + inServicePoints, 40)
+}
+
+function getCommandInputPoints(avg: number): number {
+  return Math.round((avg / 5.0) * 250)
+}
+
+function getSdaPoints(sdaAssignment: string): number {
+  if (!sdaAssignment || sdaAssignment === 'None') return 0
+  return 50
+}
+
+function getCrbPoints(referrals: number): number {
+  return Math.min(referrals, 5) * 20
+}
+
+export interface ScoreComponents {
+  warfighting: number
+  physicalToughness: number
+  mentalAgility: number
+  commandInput: number
+  bonus: number
+}
+
+export function calcScoreComponents(
+  pft: number,
+  cft: number,
+  rifleScore: number,
+  mcmapBelt: string,
+  commandInputAvg: number,
+  mosQualPoints: number,
+  mciCourses: number,
+  degree: string,
+  inGradeCourses: number,
+  inServicePoints: number,
+  sdaAssignment: string,
+  crbReferrals: number,
+): ScoreComponents {
+  const mcmapPts = getMcmapPoints(mcmapBelt)
+  const riflePts = getRiflePoints(rifleScore)
+  const warfighting = Math.min(mcmapPts + riflePts, 250)
+
+  const pftPts = getFitnessPoints(pft)
+  const cftPts = getFitnessPoints(cft)
+  const physicalToughness = Math.min(pftPts + cftPts, 250)
+
+  const mosQual = Math.min(mosQualPoints, 100)
+  const mciPts = getMciPoints(mciCourses)
+  const degreePts = getDegreePoints(degree)
+  const offDutyPts = getOffDutyPoints(inGradeCourses, inServicePoints)
+  const mentalAgility = Math.min(mosQual + mciPts + degreePts + offDutyPts, 250)
+
+  const commandInput = Math.min(getCommandInputPoints(commandInputAvg), 250)
+
+  const sdaPts = getSdaPoints(sdaAssignment)
+  const crbPts = getCrbPoints(crbReferrals)
+  const bonus = Math.min(sdaPts + crbPts, 100)
+
+  return { warfighting, physicalToughness, mentalAgility, commandInput, bonus }
+}
+
+function calcComposite(components: ScoreComponents): number {
+  return components.warfighting + components.physicalToughness + components.mentalAgility + components.commandInput + components.bonus
 }
 
 export interface OnboardingData {
@@ -45,6 +139,7 @@ export interface OnboardingData {
   degree: string
   offDutyEducationCourses: number
   mosCqs: string[]
+  mosQualPoints: number
   commandInputMosMission: number
   commandInputLeadership: number
   commandInputCharacter: number
@@ -52,6 +147,8 @@ export interface OnboardingData {
   cftScore: number
   rifleScore: number
   rifleBadge: string
+  sdaAssignment: string
+  crbReferrals: number
 }
 
 const RANK_DISPLAY: Record<string, string> = {
@@ -77,49 +174,74 @@ export function useAppState() {
   const logPft = useCallback((pullUps: number, crunches: number, runMinutes: number, runSeconds: number) => {
     const newPftScore = calculatePftScore(pullUps, crunches, runMinutes, runSeconds)
     const pftClass = getPftClass(newPftScore)
-    const oldPft = profile.pft
-    const pftDiff = newPftScore - oldPft
 
-    const oldPftCftValue = breakdown[0].value
-    const newPftCftValue = Math.min(oldPftCftValue + pftDiff, 600)
-    const newComposite = profile.compositeScore + (newPftCftValue - oldPftCftValue)
+    setProfile(prev => {
+      const commandInputAvg = prev.commandInputAvg
+      const components = calcScoreComponents(
+        newPftScore,
+        prev.cft,
+        prev.rifle,
+        prev.mcmapBelt,
+        commandInputAvg,
+        prev.mosQualPoints,
+        prev.mciCourses,
+        prev.degree,
+        prev.inGradeCourses,
+        prev.inServicePoints,
+        prev.sdaAssignment,
+        prev.crbReferrals,
+      )
+      const newComposite = calcComposite(components)
+      const newPercentile = Math.min(99, Math.max(1, Math.round((newComposite / 1000) * 100)))
 
-    const newPercentile = Math.min(99, Math.max(1, profile.percentile + Math.round(pftDiff / 5)))
+      const now = new Date()
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      const monthLabel = `${monthNames[now.getMonth()]} ${String(now.getFullYear()).slice(2)}`
 
-    setProfile(prev => ({
-      ...prev,
-      pft: newPftScore,
-      pftClass: pftClass,
-      compositeScore: newComposite,
-      percentile: newPercentile,
-      scoreTrend: prev.scoreTrend + pftDiff,
-    }))
+      setBreakdown([
+        { label: 'Warfighting', value: components.warfighting, max: 250 },
+        { label: 'Physical Toughness', value: components.physicalToughness, max: 250 },
+        { label: 'Mental Agility', value: components.mentalAgility, max: 250 },
+        { label: 'Command Input', value: components.commandInput, max: 250 },
+        { label: 'Bonus', value: components.bonus, max: 100 },
+      ])
 
-    setBreakdown(prev => prev.map((item, i) =>
-      i === 0 ? { ...item, value: newPftCftValue } : item
-    ))
+      setHistory(h => [...h, { month: monthLabel, score: newPftScore }])
+      setCompositeHist(h => [...h, { month: monthLabel, score: newComposite }])
 
-    const now = new Date()
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    const monthLabel = `${monthNames[now.getMonth()]} ${String(now.getFullYear()).slice(2)}`
-    setHistory(prev => [
-      ...prev,
-      { month: monthLabel, score: newPftScore },
-    ])
-    setCompositeHist(prev => [
-      ...prev,
-      { month: monthLabel, score: newComposite },
-    ])
-  }, [profile, breakdown])
+      return {
+        ...prev,
+        pft: newPftScore,
+        pftClass,
+        compositeScore: newComposite,
+        percentile: newPercentile,
+        scoreTrend: newComposite - prev.compositeScore,
+      }
+    })
+  }, [])
 
   const submitOnboarding = useCallback((data: OnboardingData) => {
     sessionStorage.removeItem(NOTIFICATION_PROMPT_KEY)
     setNotificationPromptShown(false)
 
     const commandInputAvg = (data.commandInputMosMission + data.commandInputLeadership + data.commandInputCharacter) / 3
-    const commandInputPoints = Math.round(commandInputAvg * 50)
-    const composite = calcComposite(data.pftScore, data.cftScore, data.rifleScore, commandInputAvg)
-    const pftCft = Math.min(data.pftScore + data.cftScore, 600)
+    const inGradeCourses = Math.min(data.offDutyEducationCourses, 4)
+
+    const components = calcScoreComponents(
+      data.pftScore,
+      data.cftScore,
+      data.rifleScore,
+      data.mcmapBelt,
+      commandInputAvg,
+      data.mosQualPoints,
+      data.marineNetCourses,
+      data.degree,
+      inGradeCourses,
+      0,
+      data.sdaAssignment,
+      data.crbReferrals,
+    )
+    const composite = calcComposite(components)
 
     setProfile({
       name: `${data.rank} ${data.lastName}`,
@@ -131,28 +253,36 @@ export function useAppState() {
       tig: '1 year 1 month',
       dor: data.dor,
       compositeScore: composite,
-      cuttingScore: 1510,
+      cuttingScore: 780,
       pft: data.pftScore,
       pftClass: getPftClass(data.pftScore),
       cft: data.cftScore,
       cftClass: getCftClass(data.cftScore),
       rifle: data.rifleScore,
       rifleClass: data.rifleBadge,
+      mcmapBelt: data.mcmapBelt,
       pmeCompleted: true,
       commandInputMosMission: data.commandInputMosMission,
       commandInputLeadership: data.commandInputLeadership,
       commandInputCharacter: data.commandInputCharacter,
-      commandInputAvg: commandInputAvg,
-      percentile: Math.min(99, Math.max(1, Math.round((composite / 1800) * 100))),
+      commandInputAvg,
+      mosQualPoints: data.mosQualPoints,
+      mciCourses: data.marineNetCourses,
+      degree: data.degree,
+      inGradeCourses,
+      inServicePoints: 0,
+      sdaAssignment: data.sdaAssignment,
+      crbReferrals: data.crbReferrals,
+      percentile: Math.min(99, Math.max(1, Math.round((composite / 1000) * 100))),
       scoreTrend: 0,
     })
 
     setBreakdown([
-      { label: 'PFT/CFT', value: pftCft, max: 600 },
-      { label: 'Rifle Qualification', value: Math.min(data.rifleScore, 350), max: 350 },
-      { label: 'PME', value: 100, max: 150 },
-      { label: 'Time in Service', value: 221, max: 400 },
-      { label: 'Command Input', value: commandInputPoints, max: 250 },
+      { label: 'Warfighting', value: components.warfighting, max: 250 },
+      { label: 'Physical Toughness', value: components.physicalToughness, max: 250 },
+      { label: 'Mental Agility', value: components.mentalAgility, max: 250 },
+      { label: 'Command Input', value: components.commandInput, max: 250 },
+      { label: 'Bonus', value: components.bonus, max: 100 },
     ])
 
     setHistory([{ month: 'Current', score: data.pftScore }])

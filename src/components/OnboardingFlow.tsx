@@ -9,7 +9,7 @@ interface OnboardingFlowProps {
   onDismiss: () => void
 }
 
-const TOTAL_STEPS = 5
+const TOTAL_STEPS = 6
 
 const labelClass = "block font-body font-medium text-wp-tan-dark mb-2"
 const labelStyle = { fontSize: 12, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }
@@ -137,6 +137,7 @@ interface Step3Data {
   degree: DegreeOption | ''
   offDutyEducationCourses: number
   mosCqs: MosCqOption[]
+  mosQualPoints: number
 }
 
 interface Step4Data {
@@ -148,6 +149,13 @@ interface Step5Data {
   mosMission: string
   leadership: string
   character: string
+}
+
+type SdaOption = 'None' | 'Drill Instructor' | 'Recruiter' | 'Marine Security Guard' | 'Combat Instructor' | 'Security Forces'
+
+interface Step6Data {
+  sdaAssignment: SdaOption
+  crbReferrals: number
 }
 
 function vibrate(pattern: number | number[]) {
@@ -418,9 +426,18 @@ function MentalAgilityStep({
   return (
     <div className="space-y-5">
       <HorizontalSliderField
-        label="MarineNet courses"
+        label="MOS qual points (max 100)"
+        value={data.mosQualPoints}
+        min={0}
+        max={100}
+        step={5}
+        onChange={v => onChange({ ...data, mosQualPoints: v })}
+      />
+
+      <HorizontalSliderField
+        label="MarineNet CEUs / MCIs (max 40)"
         value={data.marineNetCourses}
-        min={1}
+        min={0}
         max={40}
         step={1}
         onChange={v => onChange({ ...data, marineNetCourses: v })}
@@ -445,10 +462,10 @@ function MentalAgilityStep({
       </div>
 
       <HorizontalSliderField
-        label="Off-duty education courses"
+        label="Off-duty college courses (in-grade, max 4)"
         value={data.offDutyEducationCourses}
-        min={1}
-        max={40}
+        min={0}
+        max={4}
         step={1}
         onChange={v => onChange({ ...data, offDutyEducationCourses: v })}
       />
@@ -736,6 +753,66 @@ function FitnessStep({
   )
 }
 
+const SDA_OPTIONS: { code: SdaOption; label: string }[] = [
+  { code: 'None', label: 'No SDA' },
+  { code: 'Drill Instructor', label: 'DI School' },
+  { code: 'Recruiter', label: 'RSS' },
+  { code: 'Marine Security Guard', label: 'MSG' },
+  { code: 'Combat Instructor', label: 'CI' },
+  { code: 'Security Forces', label: 'SecFor' },
+]
+
+function BonusStep({
+  data,
+  onChange,
+}: {
+  data: Step6Data
+  onChange: (d: Step6Data) => void
+}) {
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className={labelClass} style={labelStyle}>Special Duty Assignment (SDA)</p>
+        <p className="font-body text-wp-tan-dark mb-3" style={{ fontSize: 12, lineHeight: 1.5 }}>
+          DI, Recruiter, MSG, Combat Instructor, and Security Forces earn 50 bonus points.
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {SDA_OPTIONS.map(opt => (
+            <SelectTile
+              key={opt.code}
+              top={opt.code}
+              bottom={opt.label}
+              selected={data.sdaAssignment === opt.code}
+              onClick={() => onChange({ ...data, sdaAssignment: opt.code })}
+            />
+          ))}
+        </div>
+      </div>
+
+      <HorizontalSliderField
+        label="CRB referrals (20 pts each, max 5)"
+        value={data.crbReferrals}
+        min={0}
+        max={5}
+        step={1}
+        onChange={v => onChange({ ...data, crbReferrals: v })}
+      />
+
+      <div
+        className="rounded-xl p-4 border border-wp-contour/50"
+        style={{ background: '#F5F1EB' }}
+      >
+        <p className="font-body font-semibold text-wp-black" style={{ fontSize: 13 }}>
+          Bonus Points Preview
+        </p>
+        <p className="font-body text-wp-tan-dark mt-1" style={{ fontSize: 12, lineHeight: 1.5 }}>
+          SDA: {data.sdaAssignment !== 'None' ? '50 pts' : '0 pts'} &nbsp;+&nbsp; CRB: {data.crbReferrals * 20} pts = <span className="font-semibold text-wp-black">{Math.min((data.sdaAssignment !== 'None' ? 50 : 0) + data.crbReferrals * 20, 100)} / 100 pts</span>
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlowProps) {
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
@@ -750,13 +827,15 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
   })
   const [step2, setStep2] = useState<Step2Data>({ destroys: 1, mcmapBelt: '' })
   const [step3, setStep3] = useState<Step3Data>({
-    marineNetCourses: 1,
+    marineNetCourses: 0,
     degree: '',
-    offDutyEducationCourses: 1,
+    offDutyEducationCourses: 0,
     mosCqs: ['None'],
+    mosQualPoints: 0,
   })
   const [step4, setStep4] = useState<Step4Data>({ pftScore: '0', cftScore: '0' })
   const [step5, setStep5] = useState<Step5Data>({ mosMission: '3.0', leadership: '3.0', character: '3.0' })
+  const [step6, setStep6] = useState<Step6Data>({ sdaAssignment: 'None', crbReferrals: 0 })
 
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -773,14 +852,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
       return step2.destroys >= 1 && step2.destroys <= 50 && !!step2.mcmapBelt
     }
     if (step === 3) {
-      return (
-        step3.marineNetCourses >= 1 &&
-        step3.marineNetCourses <= 40 &&
-        !!step3.degree &&
-        step3.offDutyEducationCourses >= 1 &&
-        step3.offDutyEducationCourses <= 40 &&
-        step3.mosCqs.length > 0
-      )
+      return !!step3.degree && step3.mosCqs.length > 0
     }
     if (step === 4) {
       const pft = parseInt(step4.pftScore, 10)
@@ -796,6 +868,9 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
         !Number.isNaN(leadership) && leadership >= 1 && leadership <= 5 &&
         !Number.isNaN(character) && character >= 1 && character <= 5
       )
+    }
+    if (step === 6) {
+      return true
     }
     return false
   }
@@ -839,6 +914,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
           degree: step3.degree,
           offDutyEducationCourses: step3.offDutyEducationCourses,
           mosCqs: step3.mosCqs,
+          mosQualPoints: step3.mosQualPoints,
           commandInputMosMission: safeMosMission,
           commandInputLeadership: safeLeadership,
           commandInputCharacter: safeCharacter,
@@ -846,6 +922,8 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
           cftScore: parseInt(step4.cftScore, 10),
           rifleScore: 335,
           rifleBadge: 'Expert',
+          sdaAssignment: step6.sdaAssignment,
+          crbReferrals: step6.crbReferrals,
         })
       }, 600)
     }
@@ -866,6 +944,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
     'Mental Agility',
     'Physical Toughness',
     'Command Input',
+    'Bonus Points',
   ]
 
   const slideStyle: React.CSSProperties = animating
@@ -929,6 +1008,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
           {step === 3 && <MentalAgilityStep data={step3} onChange={setStep3} />}
           {step === 4 && <FitnessStep data={step4} onChange={setStep4} />}
           {step === 5 && <CommandInputStep data={step5} onChange={setStep5} />}
+          {step === 6 && <BonusStep data={step6} onChange={setStep6} />}
         </div>
       </div>
 
