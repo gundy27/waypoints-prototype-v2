@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import Header from './components/Header'
 import TabBar from './components/TabBar'
 import OnboardingFlow from './components/OnboardingFlow'
@@ -208,6 +209,8 @@ export default function App() {
             onClose={() => setShowNotifPrefs(false)}
           />
         )}
+
+        <Analytics />
       </div>
 
     </div>
