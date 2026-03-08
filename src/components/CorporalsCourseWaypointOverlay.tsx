@@ -117,24 +117,32 @@ export default function CorporalsCourseWaypointOverlay({
             <div className="absolute left-1/2 top-[210px]" style={{ transform: 'translateX(-50%)' }}>
               <div className="relative" style={{ width: 1, height: 1 }}>
                 {CONFETTI.map(p => (
-                  <span
-                    key={p.id}
-                    className="absolute"
-                    style={{
-                      width: 10,
-                      height: 6,
-                      borderRadius: 2,
-                      background: p.color,
-                      left: 0,
-                      top: 0,
-                      transform: 'translate(-50%, -50%)',
-                      animation: `wpConfetti 820ms cubic-bezier(0.2, 0.9, 0.2, 1) ${p.delayMs}ms forwards`,
+                  (() => {
+                    const cssVars = {
                       '--wp-x': `${p.x}px`,
                       '--wp-y': `${p.y}px`,
                       '--wp-r': `${p.rot}deg`,
-                      boxShadow: '0 6px 12px rgba(0,0,0,0.10)',
-                    }}
-                  />
+                    } as React.CSSProperties
+
+                    return (
+                      <span
+                        key={p.id}
+                        className="absolute"
+                        style={{
+                          width: 10,
+                          height: 6,
+                          borderRadius: 2,
+                          background: p.color,
+                          left: 0,
+                          top: 0,
+                          transform: 'translate(-50%, -50%)',
+                          animation: `wpConfetti 820ms cubic-bezier(0.2, 0.9, 0.2, 1) ${p.delayMs}ms forwards`,
+                          boxShadow: '0 6px 12px rgba(0,0,0,0.10)',
+                          ...cssVars,
+                        }}
+                      />
+                    )
+                  })()
                 ))}
               </div>
             </div>
