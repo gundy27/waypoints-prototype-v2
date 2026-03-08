@@ -425,8 +425,8 @@ export function useAppState() {
     if (!promotionWindow) return null
     const mosCode = profile.mos.split(' ')[0]
     const toRank = promotionWindow.rule.toRankShort
-    return projectCutScore(mosCode, toRank, promotionWindow.quarterLabel)
-  }, [profile.mos, promotionWindow])
+    return projectCutScore(mosCode, toRank, promotionWindow.quarterLabel, 1, profile.cuttingScore)
+  }, [profile.mos, profile.cuttingScore, promotionWindow])
 
   const scoreComponents = useMemo(
     () => applyMentalAgilityBonus(

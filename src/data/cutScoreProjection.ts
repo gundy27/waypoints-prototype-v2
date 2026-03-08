@@ -25,9 +25,30 @@ export function projectCutScore(
   toRank: string,
   targetQuarter: string,
   quartersAhead: number = 1,
+  fallbackScore?: number,
 ): CutScoreProjection | null {
   const history = getHistoryForMos(mosCode, toRank)
-  if (history.length < 2) return null
+  if (history.length < 2) {
+    if (typeof fallbackScore !== 'number') return null
+
+    const variance = 20
+    const projectedMid = Math.round(fallbackScore)
+    const projectedLow = Math.max(0, projectedMid - variance)
+    const projectedHigh = projectedMid + variance
+
+    return {
+      mosCode,
+      toRank,
+      history,
+      currentScore: projectedMid,
+      projectedLow,
+      projectedMid,
+      projectedHigh,
+      targetQuarter,
+      trend: 'stable',
+      quarterlyChange: 0,
+    }
+  }
 
   const currentScore = history[history.length - 1].score
 
