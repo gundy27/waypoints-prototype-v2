@@ -1070,7 +1070,10 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
               }}
             />
 
-            <div className="sticky top-0 z-10 bg-wp-bg/90 backdrop-blur-sm px-5 pt-5 pb-4 border-b border-wp-tan-light/50">
+            <div
+              className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm px-5 pt-5 pb-4 border-b border-wp-tan-light"
+              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <span className="font-body font-semibold text-wp-tan-dark" style={{ fontSize: 13 }}>
                   Step {step} of {TOTAL_STEPS}

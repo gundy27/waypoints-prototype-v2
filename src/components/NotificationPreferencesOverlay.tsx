@@ -135,8 +135,8 @@ export default function NotificationPreferencesOverlay({ mosCode, onClose }: Pro
       }}
     >
       <div
-        className="sticky top-0 z-10 bg-wp-bg px-4 pt-5 pb-4 flex items-center gap-3"
-        style={{ borderBottom: '1px solid #E8D5B7' }}
+        className="sticky top-0 z-10 bg-wp-bg px-4 pt-5 pb-4 flex items-center gap-3 border-b border-wp-tan-light"
+        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
       >
         <button
           type="button"

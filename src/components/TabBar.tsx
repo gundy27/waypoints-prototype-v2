@@ -17,7 +17,7 @@ interface TabBarProps {
 export default function TabBar({ activeTab, onTabChange }: TabBarProps) {
   return (
     <nav
-      className="shrink-0 bg-wp-bg/90 backdrop-blur-sm border-t border-wp-tan-light z-50"
+      className="shrink-0 bg-white/90 backdrop-blur-sm border-t border-wp-tan-light z-50"
       style={{ height: 64, boxShadow: '0 -2px 8px rgba(0,0,0,0.06)' }}
     >
       <div className="flex h-full">

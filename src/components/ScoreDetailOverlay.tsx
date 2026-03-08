@@ -171,7 +171,10 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
           }}
         />
 
-        <header className="shrink-0 relative z-10 bg-wp-bg/90 backdrop-blur-sm px-4 flex items-center border-b border-wp-tan-light/50" style={{ height: 56 }}>
+        <header
+          className="shrink-0 relative z-10 bg-white/90 backdrop-blur-sm px-4 flex items-center border-b border-wp-tan-light"
+          style={{ height: 56, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+        >
           <h1 className="font-heading font-bold text-wp-black" style={{ fontSize: 20 }}>Score Breakdown</h1>
         </header>
 
