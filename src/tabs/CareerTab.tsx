@@ -1,10 +1,11 @@
-import { TrendingUp, Target, BookOpen, Dumbbell, Award, ChevronRight, CheckCircle2, Calendar, Shield, Brain, Star, Zap } from 'lucide-react'
+import { TrendingUp, Target, BookOpen, Dumbbell, Award, ChevronRight, CheckCircle2, Calendar } from 'lucide-react'
 import type { UserProfile, ScoreBreakdown, ScoreCategory } from '../data/mockData'
 import { RankInsignia, getNextRank, isRankCode } from '../components/RankInsignia'
 import type { PromotionWindow } from '../data/promotionTimeline'
 import { formatCountdown, formatShortDate } from '../data/promotionTimeline'
 import type { CutScoreProjection } from '../data/cutScoreProjection'
 import type { RankedOpportunity } from '../data/opportunityEngine'
+import ScoreWheel from '../components/ScoreWheel'
 
 
 const CATEGORY_BORDER_COLORS: Record<ScoreCategory, string> = {
@@ -32,6 +33,8 @@ interface CareerTabProps {
   cutScoreProjection: CutScoreProjection | null
   rankedOpportunities: RankedOpportunity[]
   onOpenScoreDetail: () => void
+  onOpenCorporalsCourse: () => void
+  corporalsWaypointCompleted: boolean
 }
 
 // ── Promotion Window Banner ──────────────────────────────────────────
@@ -159,12 +162,6 @@ function PromotionWindowBanner({ window }: { window: PromotionWindow }) {
 
 function ScoreCard({ profile, projection, onOpen }: { profile: UserProfile; projection: CutScoreProjection | null; onOpen: () => void }) {
   const cutTarget = projection ? projection.projectedHigh : profile.cuttingScore
-  const progress = Math.min(1, profile.compositeScore / cutTarget)
-
-  const size = 160
-  const strokeWidth = 10
-  const radius = (size - strokeWidth) / 2
-  const circumference = 2 * Math.PI * radius
 
   // Gap messaging
   const gapLow = projection ? Math.max(0, projection.projectedLow - profile.compositeScore) : 0
@@ -188,35 +185,12 @@ function ScoreCard({ profile, projection, onOpen }: { profile: UserProfile; proj
       </div>
 
       <div className="flex items-center gap-5">
-        <div className="relative shrink-0" style={{ width: size, height: size }}>
-          <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-            <title>Progress toward cutting score</title>
-            <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#E8D5B7" strokeWidth={strokeWidth} />
-            <circle
-              cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#D2C4A8"
-              strokeWidth={strokeWidth - 4}
-              strokeDasharray={`${circumference * (1 - progress) > 0 ? circumference - circumference * progress - 4 : 0} ${circumference}`}
-              strokeDashoffset={-circumference * progress - 2}
-              strokeLinecap="round" opacity={0.5}
-            />
-            <circle
-              cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#FF5522"
-              strokeWidth={strokeWidth}
-              strokeDasharray={`${circumference * progress - 2} ${circumference}`}
-              strokeDashoffset={0}
-              strokeLinecap="round"
-              style={{ transition: 'stroke-dasharray 600ms ease-in-out' }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ gap: 2 }}>
-            <span className="font-mono font-bold text-wp-black" style={{ fontSize: 32, lineHeight: 1, letterSpacing: '-0.03em' }}>
-              {profile.compositeScore}
-            </span>
-            <span className="font-body font-medium text-wp-tan-dark uppercase" style={{ fontSize: 9, letterSpacing: '0.1em' }}>
-              JEPES Score
-            </span>
-          </div>
-        </div>
+        <ScoreWheel
+          score={profile.compositeScore}
+          cutTarget={cutTarget}
+          size={160}
+          strokeWidth={10}
+        />
 
         <div className="flex flex-col justify-center gap-3.5 flex-1 min-w-0">
           {/* Projected cut line or static cutting score */}
@@ -265,50 +239,83 @@ function ScoreCard({ profile, projection, onOpen }: { profile: UserProfile; proj
 
 // ── Opportunity Card ─────────────────────────────────────────────────
 
-function OpportunityCard({ ranked }: { ranked: RankedOpportunity }) {
+function OpportunityCard({
+  ranked,
+  onClick,
+  pill,
+}: {
+  ranked: RankedOpportunity
+  onClick?: () => void
+  pill?: { label: string; tone: 'points' | 'completed' }
+}) {
   const { opportunity, urgencyLabel } = ranked
   const Icon = OPP_ICON_MAP[opportunity.icon]
   const borderColor = CATEGORY_BORDER_COLORS[opportunity.category]
 
-  return (
-    <div
-      className="bg-wp-surface rounded-xl p-3.5 border-l-[3px]"
-      style={{ borderLeftColor: borderColor, boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
-    >
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 shrink-0">
-          <Icon size={18} style={{ color: borderColor }} strokeWidth={1.75} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-body font-semibold text-wp-black" style={{ fontSize: 13 }}>
-              {opportunity.title}
-            </h3>
+  const pillTone = pill?.tone ?? 'points'
+  const pillLabel = pill?.label ?? `+${opportunity.pointImpact} pts`
+
+  const content = (
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5 shrink-0">
+        <Icon size={18} style={{ color: borderColor }} strokeWidth={1.75} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-body font-semibold text-wp-black" style={{ fontSize: 13 }}>
+            {opportunity.title}
+          </h3>
+          <div className="shrink-0 flex items-center gap-2">
             <span
-              className="shrink-0 font-mono font-bold rounded-full"
+              className="font-mono font-bold rounded-full"
               style={{
                 fontSize: 10,
                 padding: '2px 8px',
-                background: 'rgba(45,138,78,0.10)',
+                background: pillTone === 'completed' ? 'rgba(45,138,78,0.14)' : 'rgba(45,138,78,0.10)',
                 color: '#2D8A4E',
                 letterSpacing: '-0.01em',
                 lineHeight: 1.6,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
               }}
             >
-              +{opportunity.pointImpact} pts
+              {pillTone === 'completed' ? <CheckCircle2 size={12} style={{ color: '#2D8A4E' }} /> : null}
+              {pillLabel}
             </span>
+            {onClick ? <ChevronRight size={16} className="text-wp-tan-dark" /> : null}
           </div>
-          <p className="mt-1 font-body text-wp-tan-dark" style={{ fontSize: 12, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {opportunity.description}
-          </p>
-          {urgencyLabel && (
-            <p className="mt-1.5 font-body font-medium" style={{ fontSize: 11, color: '#D4940A', lineHeight: 1.3 }}>
-              {urgencyLabel}
-            </p>
-          )}
         </div>
+        <p className="mt-1 font-body text-wp-tan-dark" style={{ fontSize: 12, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {opportunity.description}
+        </p>
+        {urgencyLabel && (
+          <p className="mt-1.5 font-body font-medium" style={{ fontSize: 11, color: '#D4940A', lineHeight: 1.3 }}>
+            {urgencyLabel}
+          </p>
+        )}
       </div>
     </div>
+  )
+
+  return (
+    onClick ? (
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full text-left bg-wp-surface rounded-xl p-3.5 border-l-[3px] cursor-pointer transition-shadow duration-150 hover:shadow-md active:opacity-95"
+        style={{ borderLeftColor: borderColor, boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
+      >
+        {content}
+      </button>
+    ) : (
+      <div
+        className="bg-wp-surface rounded-xl p-3.5 border-l-[3px]"
+        style={{ borderLeftColor: borderColor, boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)' }}
+      >
+        {content}
+      </div>
+    )
   )
 }
 
@@ -321,6 +328,8 @@ export default function CareerTab({
   cutScoreProjection,
   rankedOpportunities,
   onOpenScoreDetail,
+  onOpenCorporalsCourse,
+  corporalsWaypointCompleted,
 }: CareerTabProps) {
   const rankCandidate = profile.name.split(/\s+/)[0] ?? ''
   const nextRank = isRankCode(rankCandidate) ? getNextRank(rankCandidate) : null
@@ -351,26 +360,6 @@ export default function CareerTab({
       {/* Score Card */}
       <ScoreCard profile={profile} projection={cutScoreProjection} onOpen={onOpenScoreDetail} />
 
-      {/* Score Category Tiles */}
-      <div className="flex flex-wrap justify-center gap-2.5 mt-4">
-        {[
-          { icon: <Shield size={20} />, label: 'Log Warfighting' },
-          { icon: <Dumbbell size={20} />, label: 'Log Physical Toughness' },
-          { icon: <Brain size={20} />, label: 'Log Mental Agility' },
-          { icon: <Star size={20} />, label: 'Log Command Input' },
-          { icon: <Zap size={20} />, label: 'Log Bonus' },
-        ].map(({ icon, label }) => (
-          <div
-            key={label}
-            className="flex flex-col items-center justify-center gap-1 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg text-center"
-            style={{ height: 56, fontSize: 11, lineHeight: 1.25, background: '#ebe1d1', width: 'calc(33.333% - 7px)', padding: '0 4px' }}
-          >
-            {icon}
-            <span>{label}</span>
-          </div>
-        ))}
-      </div>
-
       {/* Available to You — ranked opportunities */}
       {rankedOpportunities.length > 0 && (
         <div className="mt-5">
@@ -378,9 +367,22 @@ export default function CareerTab({
             Waypoints
           </h2>
           <div className="space-y-2.5">
-            {rankedOpportunities.slice(0, 3).map(ranked => (
-              <OpportunityCard key={ranked.opportunity.id} ranked={ranked} />
-            ))}
+            {rankedOpportunities.slice(0, 3).map(ranked => {
+              const isCorporals = ranked.opportunity.id === 'opp-1'
+              const isCompleted = isCorporals && corporalsWaypointCompleted
+              return (
+                <OpportunityCard
+                  key={ranked.opportunity.id}
+                  ranked={ranked}
+                  onClick={isCorporals ? onOpenCorporalsCourse : undefined}
+                  pill={
+                    isCorporals
+                      ? (isCompleted ? { label: 'Completed', tone: 'completed' } : { label: `+${ranked.opportunity.pointImpact} pts`, tone: 'points' })
+                      : undefined
+                  }
+                />
+              )
+            })}
           </div>
         </div>
       )}

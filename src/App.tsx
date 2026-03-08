@@ -10,6 +10,7 @@ import type { AppNotification } from './components/NotificationBell'
 import PostOnboardingPlaceholder from './components/PostOnboardingPlaceholder'
 import PftModal from './components/PftModal'
 import NotificationPreferencesOverlay from './components/NotificationPreferencesOverlay'
+import CorporalsCourseWaypointOverlay from './components/CorporalsCourseWaypointOverlay'
 import type { TabId } from './components/TabBar'
 import { useAppState } from './data/useAppState'
 import type { OnboardingData } from './data/useAppState'
@@ -41,6 +42,7 @@ export default function App() {
   const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [showPostOnboarding, setShowPostOnboarding] = useState(false)
   const [showScoreDetail, setShowScoreDetail] = useState(false)
+  const [showCorporalsWaypoint, setShowCorporalsWaypoint] = useState(false)
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false)
   const [showPftModal, setShowPftModal] = useState(false)
   const [showNotifPrefs, setShowNotifPrefs] = useState(false)
@@ -51,6 +53,7 @@ export default function App() {
   const {
     profile, breakdown, compositeHist, bookmarks, notificationPromptShown,
     promotionWindow, cutScoreProjection, rankedOpportunities,
+    corporalsWaypointCompleted, completeCorporalsWaypoint,
     logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown,
   } = useAppState()
 
@@ -98,7 +101,7 @@ export default function App() {
     }
     postOnboardingTimerRef.current = setTimeout(() => {
       setShowPostOnboarding(false)
-    }, 4000)
+    }, 6000)
   }
 
   return (
@@ -148,6 +151,8 @@ export default function App() {
               cutScoreProjection={cutScoreProjection}
               rankedOpportunities={rankedOpportunities}
               onOpenScoreDetail={() => setShowScoreDetail(true)}
+              onOpenCorporalsCourse={() => setShowCorporalsWaypoint(true)}
+              corporalsWaypointCompleted={corporalsWaypointCompleted}
             />
           )}
           {activeTab === 'pocketbook' && (
@@ -181,7 +186,11 @@ export default function App() {
         )}
 
         {showPostOnboarding && (
-          <PostOnboardingPlaceholder profile={profile} />
+          <PostOnboardingPlaceholder
+            profile={profile}
+            promotionWindow={promotionWindow}
+            cutScoreProjection={cutScoreProjection}
+          />
         )}
 
         {showScoreDetail && (
@@ -193,6 +202,14 @@ export default function App() {
             onClose={handleScoreDetailClose}
             activeTab={activeTab}
             onTabChange={setActiveTab}
+          />
+        )}
+
+        {showCorporalsWaypoint && (
+          <CorporalsCourseWaypointOverlay
+            completed={corporalsWaypointCompleted}
+            onMarkCompleted={completeCorporalsWaypoint}
+            onClose={() => setShowCorporalsWaypoint(false)}
           />
         )}
 

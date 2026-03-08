@@ -1003,8 +1003,18 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
                 <button
                   type="button"
                   onClick={onDismiss}
-                  className="font-body font-semibold text-white/90 bg-transparent border-none cursor-pointer px-0"
-                  style={{ fontSize: 14 }}
+                  className="font-body font-semibold text-white cursor-pointer border-[1.5px] rounded-lg"
+                  style={{
+                    fontSize: 14,
+                    paddingLeft: 12,
+                    paddingRight: 12,
+                    paddingTop: 7,
+                    paddingBottom: 7,
+                    borderColor: 'rgba(255,255,255,0.35)',
+                    background: 'rgba(0,0,0,0.22)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                  }}
                 >
                   Cancel
                 </button>
@@ -1068,8 +1078,15 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
                 <button
                   type="button"
                   onClick={onDismiss}
-                  className="font-body text-wp-tan-dark bg-transparent border-none cursor-pointer px-0"
-                  style={{ fontSize: 14 }}
+                  className="font-body font-semibold text-wp-black cursor-pointer border-[1.5px] border-wp-contour rounded-lg"
+                  style={{
+                    fontSize: 14,
+                    paddingLeft: 12,
+                    paddingRight: 12,
+                    paddingTop: 7,
+                    paddingBottom: 7,
+                    background: '#ebe1d1',
+                  }}
                 >
                   Cancel
                 </button>
@@ -1116,7 +1133,7 @@ export default function OnboardingFlow({ onComplete, onDismiss }: OnboardingFlow
                   type="button"
                   onClick={goNext}
                   disabled={!canAdvance()}
-                  className="flex-1 flex items-center justify-center gap-2 bg-wp-accent text-white font-body font-semibold rounded-xl border-none cursor-pointer transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-2 bg-wp-accent text-white font-body font-semibold rounded-xl border-none cursor-pointer transition-all duration-150 disabled:opacity-100 disabled:bg-wp-tan-light disabled:text-wp-tan-dark disabled:cursor-not-allowed"
                   style={{ height: 52, fontSize: 15 }}
                 >
                   {showCheck ? (

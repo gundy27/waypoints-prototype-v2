@@ -127,6 +127,14 @@ export interface ScoreComponents {
   bonus: number
 }
 
+function applyMentalAgilityBonus(components: ScoreComponents, bonus: number): ScoreComponents {
+  if (bonus <= 0) return components
+  return {
+    ...components,
+    mentalAgility: Math.min(250, components.mentalAgility + bonus),
+  }
+}
+
 export function calcScoreComponents(
   pft: number,
   cft: number,
@@ -208,6 +216,8 @@ export function useAppState() {
   const [history, setHistory] = useState([...pftHistory])
   const [compositeHist, setCompositeHist] = useState([...compositeHistory])
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set())
+  const [corporalsWaypointCompleted, setCorporalsWaypointCompleted] = useState(false)
+  const [mentalAgilityWaypointBonus, setMentalAgilityWaypointBonus] = useState(0)
   const [notificationPromptShown, setNotificationPromptShown] = useState(
     () => sessionStorage.getItem(NOTIFICATION_PROMPT_KEY) === 'true'
   )
@@ -218,7 +228,7 @@ export function useAppState() {
 
     setProfile(prev => {
       const commandInputAvg = prev.commandInputAvg
-      const components = calcScoreComponents(
+      const base = calcScoreComponents(
         newPftScore,
         prev.cft,
         prev.rifle,
@@ -232,6 +242,7 @@ export function useAppState() {
         prev.sdaAssignment,
         prev.crbReferrals,
       )
+      const components = applyMentalAgilityBonus(base, mentalAgilityWaypointBonus)
       const newComposite = calcComposite(components)
 
       const now = new Date()
@@ -257,7 +268,7 @@ export function useAppState() {
         scoreTrend: newComposite - prev.compositeScore,
       }
     })
-  }, [])
+  }, [mentalAgilityWaypointBonus])
 
   const submitOnboarding = useCallback((data: OnboardingData) => {
     sessionStorage.removeItem(NOTIFICATION_PROMPT_KEY)
@@ -266,7 +277,7 @@ export function useAppState() {
     const commandInputAvg = (data.commandInputMosMission + data.commandInputLeadership + data.commandInputCharacter) / 3
     const inGradeCourses = Math.min(data.offDutyEducationCourses, 4)
 
-    const components = calcScoreComponents(
+    const base = calcScoreComponents(
       data.pftScore,
       data.cftScore,
       data.rifleScore,
@@ -280,6 +291,7 @@ export function useAppState() {
       data.sdaAssignment,
       data.crbReferrals,
     )
+    const components = applyMentalAgilityBonus(base, mentalAgilityWaypointBonus)
     const composite = calcComposite(components)
 
     setProfile({
@@ -326,12 +338,57 @@ export function useAppState() {
 
     setHistory([{ month: 'Current', score: data.pftScore }])
     setCompositeHist([{ month: 'Current', score: composite }])
-  }, [])
+  }, [mentalAgilityWaypointBonus])
 
   const markNotificationShown = useCallback(() => {
     sessionStorage.setItem(NOTIFICATION_PROMPT_KEY, 'true')
     setNotificationPromptShown(true)
   }, [])
+
+  const completeCorporalsWaypoint = useCallback(() => {
+    if (corporalsWaypointCompleted) return
+    const bonus = 50
+    setCorporalsWaypointCompleted(true)
+    setMentalAgilityWaypointBonus(bonus)
+
+    setProfile(prev => {
+      const base = calcScoreComponents(
+        prev.pft,
+        prev.cft,
+        prev.rifle,
+        prev.mcmapBelt,
+        prev.commandInputAvg,
+        prev.mosQualPoints,
+        prev.mciCourses,
+        prev.degree,
+        prev.inGradeCourses,
+        prev.inServicePoints,
+        prev.sdaAssignment,
+        prev.crbReferrals,
+      )
+      const components = applyMentalAgilityBonus(base, bonus)
+      const newComposite = calcComposite(components)
+
+      setBreakdown([
+        { label: 'Warfighting', value: components.warfighting, max: 250 },
+        { label: 'Physical Toughness', value: components.physicalToughness, max: 250 },
+        { label: 'Mental Agility', value: components.mentalAgility, max: 250 },
+        { label: 'Command Input', value: components.commandInput, max: 250 },
+        { label: 'Bonus', value: components.bonus, max: 100 },
+      ])
+
+      const now = new Date()
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      const monthLabel = `${monthNames[now.getMonth()]} ${String(now.getFullYear()).slice(2)}`
+      setCompositeHist(h => [...h, { month: monthLabel, score: newComposite }])
+
+      return {
+        ...prev,
+        compositeScore: newComposite,
+        scoreTrend: newComposite - prev.compositeScore,
+      }
+    })
+  }, [corporalsWaypointCompleted])
 
   const resetToMockData = useCallback(() => {
     sessionStorage.removeItem(NOTIFICATION_PROMPT_KEY)
@@ -341,6 +398,8 @@ export function useAppState() {
     setHistory([...pftHistory])
     setCompositeHist([...compositeHistory])
     setBookmarks(new Set())
+    setCorporalsWaypointCompleted(false)
+    setMentalAgilityWaypointBonus(0)
   }, [])
 
   const toggleBookmark = useCallback((id: string) => {
@@ -359,7 +418,7 @@ export function useAppState() {
 
   const promotionWindow: PromotionWindow | null = useMemo(
     () => calculatePromotionWindow(profile),
-    [profile.rank, profile.dor],
+    [profile],
   )
 
   const cutScoreProjection: CutScoreProjection | null = useMemo(() => {
@@ -370,13 +429,16 @@ export function useAppState() {
   }, [profile.mos, promotionWindow])
 
   const scoreComponents = useMemo(
-    () => calcScoreComponents(
-      profile.pft, profile.cft, profile.rifle, profile.mcmapBelt,
-      profile.commandInputAvg, profile.mosQualPoints, profile.mciCourses,
-      profile.degree, profile.inGradeCourses, profile.inServicePoints,
-      profile.sdaAssignment, profile.crbReferrals,
+    () => applyMentalAgilityBonus(
+      calcScoreComponents(
+        profile.pft, profile.cft, profile.rifle, profile.mcmapBelt,
+        profile.commandInputAvg, profile.mosQualPoints, profile.mciCourses,
+        profile.degree, profile.inGradeCourses, profile.inServicePoints,
+        profile.sdaAssignment, profile.crbReferrals,
+      ),
+      mentalAgilityWaypointBonus,
     ),
-    [profile],
+    [profile, mentalAgilityWaypointBonus],
   )
 
   const rankedOpportunities: RankedOpportunity[] = useMemo(
@@ -391,7 +453,9 @@ export function useAppState() {
 
   return {
     profile, breakdown, history, compositeHist, bookmarks, notificationPromptShown,
+    corporalsWaypointCompleted,
     promotionWindow, cutScoreProjection, rankedOpportunities, currentSeason,
     logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown,
+    completeCorporalsWaypoint,
   }
 }

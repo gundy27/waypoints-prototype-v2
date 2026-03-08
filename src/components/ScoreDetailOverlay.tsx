@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Shield, Dumbbell, Brain, Star, Zap } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ReferenceArea, ResponsiveContainer } from 'recharts'
 import type { UserProfile, ScoreBreakdown } from '../data/mockData'
 import type { CutScoreProjection } from '../data/cutScoreProjection'
@@ -210,6 +210,25 @@ export default function ScoreDetailOverlay({ profile, breakdown, compositeHistor
           </div>
 
           <CompositeChart history={compositeHistory} cuttingScore={profile.cuttingScore} projection={cutScoreProjection} />
+
+          <div className="flex flex-wrap justify-center gap-2.5 mt-4">
+            {[
+              { icon: <Shield size={20} />, label: 'Log Warfighting' },
+              { icon: <Dumbbell size={20} />, label: 'Log Physical Toughness' },
+              { icon: <Brain size={20} />, label: 'Log Mental Agility' },
+              { icon: <Star size={20} />, label: 'Log Command Input' },
+              { icon: <Zap size={20} />, label: 'Log Bonus' },
+            ].map(({ icon, label }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center justify-center gap-1 border-[1.5px] border-wp-tan text-wp-black font-body font-medium rounded-lg text-center"
+                style={{ height: 56, fontSize: 11, lineHeight: 1.25, background: '#ebe1d1', width: 'calc(33.333% - 7px)', padding: '0 4px' }}
+              >
+                {icon}
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
 
           <BreakdownSection breakdown={breakdown} />
         </main>
