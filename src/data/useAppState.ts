@@ -19,6 +19,7 @@ import { buildLogEntry, getLogType } from './logs'
 import type { LogEntry, LogTypeId } from './logs'
 import { buildScoreGap, mockBranchScore, fitnessMaxForTest, applyBonusToComponents } from './scoring'
 import type { ScoreGap } from './scoring'
+import { martinezServiceHistory, computeJourneyStats } from './serviceHistory'
 
 const DAY_MS = 1000 * 60 * 60 * 24
 
@@ -26,6 +27,22 @@ const DAY_MS = 1000 * 60 * 60 * 24
 const SEED_GRADE = defaultProfile.rank.split(' ')[0]
 const SEED_OBJECTIVE = defaultObjectiveForIntent('career', 'marines', SEED_GRADE)
 const SEED_WAYPOINTS = recommendWaypoints(SEED_OBJECTIVE, 'marines', SEED_GRADE)
+
+// Seeded activity history (newest-first) — populates My Journey + recent activity.
+const SEED_LOGS: LogEntry[] = [
+  buildLogEntry('fitness', { test: 'PFT', score: 285, date: '2026-01-15' }, 'seed'),
+  buildLogEntry('pme', { name: 'Leading Marines (MCI)', date: '2025-12-02' }, 'seed'),
+  buildLogEntry('journal', { note: 'Picked up team lead for the fire team', date: '2025-11-01' }, 'seed'),
+  buildLogEntry('bodycomp', { weight: 178, date: '2025-09-01' }, 'seed'),
+  buildLogEntry('fitness', { test: 'CFT', score: 290, date: '2025-08-12' }, 'seed'),
+  buildLogEntry('weapons', { weapon: 'Rifle', level: 'Expert', date: '2025-03-10' }, 'seed'),
+  buildLogEntry('pme', { name: 'MCMAP Gray Belt Course', date: '2025-02-15' }, 'seed'),
+  buildLogEntry('award', { name: 'Sea Service Deployment Ribbon', date: '2024-09-20' }, 'seed'),
+  buildLogEntry('fitness', { test: 'PFT', score: 268, date: '2024-05-20' }, 'seed'),
+  buildLogEntry('eval', { kind: 'EVAL', period: 'Semi-annual FY24', date: '2024-01-10' }, 'seed'),
+  buildLogEntry('award', { name: 'Certificate of Commendation', date: '2023-10-05' }, 'seed'),
+  buildLogEntry('pme', { name: 'Annual MarineNet MCIs (x3)', date: '2023-06-15' }, 'seed'),
+]
 
 export function getPromotionWindowLabel(windowStart: string, windowEnd: string): string {
   const today = new Date()
@@ -258,10 +275,9 @@ export function useAppState() {
   const [branchId, setBranchId] = useState<BranchId>('marines')
   const [objective, setObjectiveState] = useState<Objective>(SEED_OBJECTIVE)
   const [waypoints, setWaypoints] = useState<Waypoint[]>(SEED_WAYPOINTS)
-  const [logs, setLogs] = useState<LogEntry[]>(() => [
-    buildLogEntry('fitness', { test: 'PFT', score: 271, date: '2026-01-15' }, 'seed'),
-    buildLogEntry('pme', { name: 'Leading Marines (MCI)', date: '2025-12-02' }, 'seed'),
-  ])
+  const [logs, setLogs] = useState<LogEntry[]>(() => [...SEED_LOGS])
+  // Objectives the user switched away from this session (counts toward "switched").
+  const [liveSwitchedObjectives, setLiveSwitchedObjectives] = useState(0)
 
   const logPft = useCallback((pullUps: number, crunches: number, runMinutes: number, runSeconds: number) => {
     const newPftScore = calculatePftScore(pullUps, crunches, runMinutes, runSeconds)
@@ -444,10 +460,8 @@ export function useAppState() {
     setBranchId('marines')
     setObjectiveState(SEED_OBJECTIVE)
     setWaypoints(SEED_WAYPOINTS)
-    setLogs([
-      buildLogEntry('fitness', { test: 'PFT', score: 271, date: '2026-01-15' }, 'seed'),
-      buildLogEntry('pme', { name: 'Leading Marines (MCI)', date: '2025-12-02' }, 'seed'),
-    ])
+    setLogs([...SEED_LOGS])
+    setLiveSwitchedObjectives(0)
   }, [])
 
   const toggleBookmark = useCallback((id: string) => {
@@ -465,7 +479,11 @@ export function useAppState() {
   const setObjective = useCallback((templateId: string, targetDate?: string) => {
     const grade = profile.rank.split(' ')[0]
     const obj = buildObjective(templateId, branchId, grade, { source: 'user_set', targetDate })
-    setObjectiveState(obj)
+    setObjectiveState(prev => {
+      // Switching to a different objective retires the prior one as "switched".
+      if (prev.templateId !== obj.templateId) setLiveSwitchedObjectives(n => n + 1)
+      return obj
+    })
     setWaypoints(recommendWaypoints(obj, branchId, grade))
   }, [branchId, profile.rank])
 
@@ -637,6 +655,11 @@ export function useAppState() {
   const recentActivity = useMemo(() => logs.slice(0, 3), [logs])
   const wpProgress = useMemo(() => waypointProgress(waypoints), [waypoints])
 
+  const journeyStats = useMemo(
+    () => computeJourneyStats(martinezServiceHistory, logs, wpProgress.completed, liveSwitchedObjectives, objective),
+    [logs, wpProgress.completed, liveSwitchedObjectives, objective],
+  )
+
   return {
     profile, breakdown, history, compositeHist, bookmarks, notificationPromptShown,
     corporalsWaypointCompleted,
@@ -647,5 +670,7 @@ export function useAppState() {
     branchId, branch, objective, waypoints, logs,
     currentGap, objectiveCountdown, recentActivity, wpProgress, completedWaypointBonus,
     setObjective, completeWaypointById, submitLog, completeOnboarding,
+    // My Journey
+    serviceHistory: martinezServiceHistory, journeyStats,
   }
 }

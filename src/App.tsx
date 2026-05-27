@@ -64,6 +64,7 @@ export default function App() {
     profile, branch, branchId, objective, objectiveCountdown, currentGap, wpProgress,
     completedWaypointBonus, waypoints, recentActivity, logs, cutScoreProjection,
     setObjective, completeWaypointById, submitLog, completeOnboarding, resetToMockData,
+    serviceHistory, journeyStats,
   } = useAppState()
 
   const hasUnread = notifications.some(n => !n.read)
@@ -151,7 +152,7 @@ export default function App() {
             />
           )}
           {activeTab === 'journey' && (
-            <JourneyTab profile={profile} branchName={branch.name} branchShort={branch.shortName} logs={logs} />
+            <JourneyTab profile={profile} branchName={branch.name} history={serviceHistory} logs={logs} stats={journeyStats} />
           )}
           {activeTab === 'guide' && (
             <GuideTab
