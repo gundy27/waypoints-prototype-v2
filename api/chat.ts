@@ -2,8 +2,8 @@
 // Mirrors the Vite dev middleware in vite.config.ts. Reads the key from
 // the ANTHROPIC_API_KEY environment variable (set in the Vercel dashboard).
 
-import { generateReply } from './chatHandler'
-import type { ChatRequestBody } from './chatHandler'
+import { generateReply } from './chatHandler.js'
+import type { ChatRequestBody } from './chatHandler.js'
 
 interface VercelLikeRequest {
   method?: string
