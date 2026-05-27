@@ -83,7 +83,7 @@ export default function ScoreWheel({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#FF5522"
+          stroke="var(--color-wp-accent)"
           strokeWidth={strokeWidth}
           strokeDasharray={`${Math.max(0, circumference * progress - 2)} ${circumference}`}
           strokeDashoffset={0}

@@ -7,6 +7,25 @@ import { projectCutScore } from './cutScoreProjection'
 import type { CutScoreProjection } from './cutScoreProjection'
 import { rankOpportunities } from './opportunityEngine'
 import type { RankedOpportunity } from './opportunityEngine'
+import { getBranch, getRank, formatRank } from './branches'
+import type { BranchId } from './branches'
+import {
+  defaultObjectiveForIntent, buildObjective, makeCountdown, nextFitnessTestDate,
+} from './objectives'
+import type { Objective, Countdown, Intent } from './objectives'
+import { recommendWaypoints, completeWaypoint, waypointProgress } from './waypoints'
+import type { Waypoint } from './waypoints'
+import { buildLogEntry, getLogType } from './logs'
+import type { LogEntry, LogTypeId } from './logs'
+import { buildScoreGap, mockBranchScore, fitnessMaxForTest, applyBonusToComponents } from './scoring'
+import type { ScoreGap } from './scoring'
+
+const DAY_MS = 1000 * 60 * 60 * 24
+
+// Stable seed so the seeded objective id and its waypoints' ids agree.
+const SEED_GRADE = defaultProfile.rank.split(' ')[0]
+const SEED_OBJECTIVE = defaultObjectiveForIntent('career', 'marines', SEED_GRADE)
+const SEED_WAYPOINTS = recommendWaypoints(SEED_OBJECTIVE, 'marines', SEED_GRADE)
 
 export function getPromotionWindowLabel(windowStart: string, windowEnd: string): string {
   const today = new Date()
@@ -200,6 +219,19 @@ export interface OnboardingData {
   crbReferrals: number
 }
 
+export interface OnboardingV2Data {
+  firstName: string
+  lastName: string
+  branchId: BranchId
+  payGrade: string
+  intent: Intent
+  job?: string
+  lastScore?: number
+  targetDate?: string
+  dor?: string
+  isPreBootcamp?: boolean
+}
+
 const RANK_DISPLAY: Record<string, string> = {
   PVT: 'E-1 (Private)',
   PFC: 'E-2 (Private First Class)',
@@ -221,6 +253,15 @@ export function useAppState() {
   const [notificationPromptShown, setNotificationPromptShown] = useState(
     () => sessionStorage.getItem(NOTIFICATION_PROMPT_KEY) === 'true'
   )
+
+  // ── 2.0 primitives: branch, objective, waypoints, logs ─────────────
+  const [branchId, setBranchId] = useState<BranchId>('marines')
+  const [objective, setObjectiveState] = useState<Objective>(SEED_OBJECTIVE)
+  const [waypoints, setWaypoints] = useState<Waypoint[]>(SEED_WAYPOINTS)
+  const [logs, setLogs] = useState<LogEntry[]>(() => [
+    buildLogEntry('fitness', { test: 'PFT', score: 271, date: '2026-01-15' }, 'seed'),
+    buildLogEntry('pme', { name: 'Leading Marines (MCI)', date: '2025-12-02' }, 'seed'),
+  ])
 
   const logPft = useCallback((pullUps: number, crunches: number, runMinutes: number, runSeconds: number) => {
     const newPftScore = calculatePftScore(pullUps, crunches, runMinutes, runSeconds)
@@ -400,6 +441,13 @@ export function useAppState() {
     setBookmarks(new Set())
     setCorporalsWaypointCompleted(false)
     setMentalAgilityWaypointBonus(0)
+    setBranchId('marines')
+    setObjectiveState(SEED_OBJECTIVE)
+    setWaypoints(SEED_WAYPOINTS)
+    setLogs([
+      buildLogEntry('fitness', { test: 'PFT', score: 271, date: '2026-01-15' }, 'seed'),
+      buildLogEntry('pme', { name: 'Leading Marines (MCI)', date: '2025-12-02' }, 'seed'),
+    ])
   }, [])
 
   const toggleBookmark = useCallback((id: string) => {
@@ -414,7 +462,93 @@ export function useAppState() {
     })
   }, [])
 
+  const setObjective = useCallback((templateId: string, targetDate?: string) => {
+    const grade = profile.rank.split(' ')[0]
+    const obj = buildObjective(templateId, branchId, grade, { source: 'user_set', targetDate })
+    setObjectiveState(obj)
+    setWaypoints(recommendWaypoints(obj, branchId, grade))
+  }, [branchId, profile.rank])
+
+  const completeWaypointById = useCallback((id: string) => {
+    setWaypoints(prev => completeWaypoint(prev, id))
+  }, [])
+
+  const completeOnboarding = useCallback((data: OnboardingV2Data) => {
+    sessionStorage.removeItem(NOTIFICATION_PROMPT_KEY)
+    setNotificationPromptShown(false)
+    setBranchId(data.branchId)
+    const rank = getRank(data.branchId, data.payGrade)
+    const obj = data.isPreBootcamp
+      ? buildObjective('tmpl-bootcamp', data.branchId, data.payGrade, { source: 'auto', targetDate: data.targetDate })
+      : defaultObjectiveForIntent(data.intent, data.branchId, data.payGrade, data.targetDate)
+    setObjectiveState(obj)
+    setWaypoints(recommendWaypoints(obj, data.branchId, data.payGrade))
+    setLogs([])
+    setProfile(prev => ({
+      ...prev,
+      name: rank ? `${rank.abbr} ${data.lastName}` : data.lastName,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      rank: rank ? formatRank(rank) : data.payGrade,
+      mos: data.job || prev.mos,
+      pft: data.lastScore ?? prev.pft,
+      dor: data.dor ?? prev.dor,
+      ...(data.dor ? calcPromotionWindow(data.dor) : {}),
+    }))
+  }, [])
+
+  const submitLog = useCallback(
+    (typeId: LogTypeId, data: Record<string, string | number>) => {
+      setLogs(prev => [buildLogEntry(typeId, data, 'log_overlay'), ...prev])
+
+      // Fitness logs move the gap: update the score and (for Marines) recompute the composite.
+      if (typeId === 'fitness') {
+        const score = Number(data.score) || 0
+        const isCft = String(data.test ?? '') === 'CFT'
+        if (score > 0) {
+          setProfile(prev => {
+            const pft = isCft ? prev.pft : score
+            const cft = isCft ? score : prev.cft
+            const next = {
+              ...prev,
+              pft, cft,
+              pftClass: getPftClass(pft),
+              cftClass: getCftClass(cft),
+            }
+            if (branchId !== 'marines') return next
+            const comps = calcScoreComponents(
+              pft, cft, prev.rifle, prev.mcmapBelt, prev.commandInputAvg,
+              prev.mosQualPoints, prev.mciCourses, prev.degree,
+              prev.inGradeCourses, prev.inServicePoints, prev.sdaAssignment, prev.crbReferrals,
+            )
+            const composite = calcComposite(comps)
+            setBreakdown([
+              { label: 'Warfighting', value: comps.warfighting, max: 250 },
+              { label: 'Physical Toughness', value: comps.physicalToughness, max: 250 },
+              { label: 'Mental Agility', value: comps.mentalAgility, max: 250 },
+              { label: 'Command Input', value: comps.commandInput, max: 250 },
+              { label: 'Bonus', value: comps.bonus, max: 100 },
+            ])
+            return { ...next, compositeScore: composite, scoreTrend: composite - prev.compositeScore }
+          })
+        }
+      }
+
+      // Auto-complete the first open log-triggered waypoint matching this log type.
+      const def = getLogType(typeId)
+      if (def) {
+        setWaypoints(prev => {
+          const target = prev.find(w => w.status === 'open' && w.completionLogic === 'log' && w.icon === def.icon)
+          return target ? completeWaypoint(prev, target.id) : prev
+        })
+      }
+    },
+    [branchId],
+  )
+
   // ── Derived computed values ──────────────────────────────────────────
+
+  const branch = getBranch(branchId)
 
   const promotionWindow: PromotionWindow | null = useMemo(
     () => calculatePromotionWindow(profile),
@@ -451,11 +585,67 @@ export function useAppState() {
     return month >= 0 && month <= 5 ? 'pft' : 'cft'
   }, [])
 
+  const completedWaypointBonus = useMemo(
+    () => waypoints.filter(w => w.status === 'completed').reduce((s, w) => s + (w.pointValue ?? 0), 0),
+    [waypoints],
+  )
+
+  const currentGap: ScoreGap | null = useMemo(() => {
+    if (objective.gapKind === 'waypoints') return null
+    if (objective.gapKind === 'fitness') {
+      const max = fitnessMaxForTest(branch.fitnessTest)
+      return buildScoreGap(
+        profile.pft, max, max,
+        [{ label: branch.fitnessTest, value: profile.pft, max }],
+        branch.fitnessTest,
+      )
+    }
+    const base = branchId === 'marines'
+      ? buildScoreGap(
+          profile.compositeScore, profile.cuttingScore, branch.scoringMax,
+          breakdown.map(b => ({ label: b.label, value: b.value, max: b.max })),
+          branch.scoringLabel,
+        )
+      : mockBranchScore(branchId)
+    if (completedWaypointBonus <= 0) return base
+    const components = applyBonusToComponents(base.components, completedWaypointBonus)
+    const current = components.reduce((s, c) => s + c.value, 0)
+    return buildScoreGap(current, base.target, base.max, components, base.unitLabel)
+  }, [objective.gapKind, branchId, branch, profile, breakdown, completedWaypointBonus])
+
+  const objectiveCountdown: Countdown | null = useMemo(() => {
+    if (objective.countdownAnchor === 'promotion_cycle') {
+      if (promotionWindow) {
+        return makeCountdown(
+          `${promotionWindow.quarterLabel} cycle`,
+          promotionWindow.eligibilityDate,
+          objective.createdAt,
+          promotionWindow.isEligible ? 'In window' : 'Preparation',
+        )
+      }
+      return makeCountdown('Next promotion cycle', new Date(CURRENT_DATE.getTime() + 120 * DAY_MS), objective.createdAt)
+    }
+    if (objective.countdownAnchor === 'next_test') {
+      return makeCountdown(`${branch.fitnessTest} window`, nextFitnessTestDate(branch.fitnessTest), objective.createdAt)
+    }
+    if (objective.targetDate) {
+      return makeCountdown(objective.targetEvent ?? 'Target date', new Date(objective.targetDate), objective.createdAt)
+    }
+    return makeCountdown('Target date', new Date(CURRENT_DATE.getTime() + 90 * DAY_MS), objective.createdAt)
+  }, [objective, promotionWindow, branch])
+
+  const recentActivity = useMemo(() => logs.slice(0, 3), [logs])
+  const wpProgress = useMemo(() => waypointProgress(waypoints), [waypoints])
+
   return {
     profile, breakdown, history, compositeHist, bookmarks, notificationPromptShown,
     corporalsWaypointCompleted,
     promotionWindow, cutScoreProjection, rankedOpportunities, currentSeason,
     logPft, submitOnboarding, resetToMockData, toggleBookmark, markNotificationShown,
     completeCorporalsWaypoint,
+    // 2.0 primitives
+    branchId, branch, objective, waypoints, logs,
+    currentGap, objectiveCountdown, recentActivity, wpProgress, completedWaypointBonus,
+    setObjective, completeWaypointById, submitLog, completeOnboarding,
   }
 }

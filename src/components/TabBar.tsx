@@ -1,10 +1,9 @@
-import { Crosshair, BookOpen, FileText, User } from 'lucide-react'
+import { Flag, Route, Compass } from 'lucide-react'
 
 const tabs = [
-  { id: 'career', label: 'Career', icon: Crosshair },
-  { id: 'pocketbook', label: 'Pocketbook', icon: BookOpen },
-  { id: 'maradmins', label: 'MARADMINS', icon: FileText },
-  { id: 'account', label: 'Account', icon: User },
+  { id: 'objective', label: 'Objective', icon: Flag },
+  { id: 'journey', label: 'My Journey', icon: Route },
+  { id: 'guide', label: 'Guide', icon: Compass },
 ] as const
 
 export type TabId = (typeof tabs)[number]['id']

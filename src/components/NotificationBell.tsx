@@ -9,6 +9,7 @@ export interface AppNotification {
   reason?: string
   read: boolean
   targetTab?: TabId
+  kind?: 'policy' | 'ai' | 'accountability' | 'countdown' | 'milestone'
 }
 
 interface NotificationBellProps {

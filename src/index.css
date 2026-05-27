@@ -43,3 +43,20 @@
     border-color: #FF5522;
   }
 }
+
+/* Markdown rendering for AI chat responses */
+.wp-md { font-size: 14px; line-height: 1.55; color: #1A1A1A; word-break: break-word; }
+.wp-md > :first-child { margin-top: 0; }
+.wp-md > :last-child { margin-bottom: 0; }
+.wp-md p { margin: 0 0 8px; }
+.wp-md ul, .wp-md ol { margin: 0 0 8px; padding-left: 18px; }
+.wp-md li { margin: 2px 0; }
+.wp-md h1, .wp-md h2, .wp-md h3, .wp-md h4 { font-weight: 700; margin: 10px 0 6px; font-size: 15px; line-height: 1.3; }
+.wp-md table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 12.5px; display: block; overflow-x: auto; }
+.wp-md th, .wp-md td { border: 1px solid #E8D5B7; padding: 4px 8px; text-align: left; }
+.wp-md th { background: #F2E7D6; font-weight: 600; }
+.wp-md code { background: #EDE6D8; padding: 1px 4px; border-radius: 4px; font-size: 12px; font-family: var(--font-mono); }
+.wp-md pre { background: #EDE6D8; padding: 8px; border-radius: 8px; overflow-x: auto; margin: 0 0 8px; }
+.wp-md pre code { background: none; padding: 0; }
+.wp-md strong { font-weight: 600; }
+.wp-md a { color: var(--color-wp-accent); text-decoration: underline; }
